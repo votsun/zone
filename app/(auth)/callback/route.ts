@@ -1,33 +1,30 @@
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
 
-export async function GET(request: NextRequest) {
-  const requestUrl = new URL(request.url);
-  const code = requestUrl.searchParams.get("code");
+function safeRedirectPath(nextParam: string | null) {
+  if (!nextParam || !nextParam.startsWith('/')) return '/dashboard'
+  if (nextParam.startsWith('//')) return '/dashboard'
+  return nextParam
+}
 
-  if (code) {
-    const cookieStore = await cookies(); // ✅ ADD await HERE
+export async function GET(request: Request) {
+  const requestUrl = new URL(request.url)
+  const code = requestUrl.searchParams.get('code')
+  const next = safeRedirectPath(requestUrl.searchParams.get('next'))
+  const origin = requestUrl.origin
 
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() {
-            return cookieStore.getAll(); // ✅ now works
-          },
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options) // ✅ now works
-            );
-          },
-        },
-      }
-    );
-
-    await supabase.auth.exchangeCodeForSession(code);
+  if (!code) {
+    return NextResponse.redirect(`${origin}/login?error=missing_code`)
   }
 
-  return NextResponse.redirect(new URL("/", request.url));
+  const supabase = await createClient()
+  const { error } = await supabase.auth.exchangeCodeForSession(code)
+
+  if (error) {
+    const loginUrl = new URL('/login', origin)
+    loginUrl.searchParams.set('error', error.message)
+    return NextResponse.redirect(loginUrl)
+  }
+
+  return NextResponse.redirect(new URL(next, origin))
 }
