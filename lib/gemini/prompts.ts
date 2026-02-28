@@ -35,21 +35,30 @@ Format:
 }
 
 export function buildPriorityPrompt(
-  tasks: { title: string; category?: string; energy_level?: string }[]
+  tasks: {
+    title: string
+    deadline: string | null
+    estimated_total_minutes: number | null
+  }[]
 ): string {
   return `
 You are an ADHD productivity assistant for an app called Zone.
 
-Given these tasks, assign a priority and suggest an ordering that alternates
-between boring and fun tasks to maintain engagement.
+Given these tasks, assign a priority and suggest an ordering.
 
 Tasks: ${JSON.stringify(tasks)}
+
+Ranking criteria (in order of importance):
+1. DEADLINE — tasks with closer deadlines rank higher. Tasks with no deadline rank lowest.
+2. ESTIMATED TIME — among tasks with similar deadlines, shorter tasks rank higher (quick wins build momentum for ADHD brains).
 
 Rules:
 - Return ONLY a valid JSON array, no markdown, no backticks, no extra text
 - Priority must be "high", "medium", or "low"
-- ADHD brains do best starting with a quick win, then alternating boring/fun
-- Consider deadline urgency and energy level when assigning priority
+- "high" = due soon or overdue
+- "medium" = due within a few days or moderate length with no deadline
+- "low" = no deadline and/or long task with no urgency
+- Start the order with a quick win when possible (ADHD needs early momentum)
 
 Format:
 [

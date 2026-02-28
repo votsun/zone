@@ -18,7 +18,6 @@ export async function PATCH(
 
   const allowedFields = [
     'title',
-    'category',
     'priority',
     'energy_level',
     'deadline',
@@ -28,7 +27,12 @@ export async function PATCH(
   const sanitized: Record<string, any> = {}
   for (const key of allowedFields) {
     if (key in body) {
-      sanitized[key] = body[key]
+      // Normalize blank deadlines to null
+      if (key === 'deadline' && !body[key]) {
+        sanitized[key] = null
+      } else {
+        sanitized[key] = body[key]
+      }
     }
   }
 

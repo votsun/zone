@@ -30,7 +30,6 @@ export async function POST(request: Request) {
     })
     const text = response.text ?? ''
 
-    // Gemini sometimes wraps JSON in markdown code fences
     const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
     const microSteps = JSON.parse(cleaned)
 

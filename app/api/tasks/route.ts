@@ -41,7 +41,6 @@ export async function POST(request: Request) {
     .insert({
       user_id: user.id,
       title: body.title,
-      category: body.category || 'neutral',
       priority: body.priority || 'medium',
       energy_level: body.energy_level || 'medium',
       deadline: body.deadline || null,

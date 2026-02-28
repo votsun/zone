@@ -23,11 +23,21 @@ export async function POST(request: Request) {
   }
 
   try {
-    const taskSummaries = tasks.map((t: any) => ({
-      title: t.title,
-      category: t.category,
-      energy_level: t.energy_level,
-    }))
+    // Calculate estimated total minutes per task from their micro_steps
+    const taskSummaries = tasks.map((t: any) => {
+      const totalMinutes = t.micro_steps
+        ? t.micro_steps.reduce(
+            (sum: number, step: any) => sum + (step.estimated_minutes || 0),
+            0
+          )
+        : null
+
+      return {
+        title: t.title,
+        deadline: t.deadline || null,
+        estimated_total_minutes: totalMinutes,
+      }
+    })
 
     const prompt = buildPriorityPrompt(taskSummaries)
     const response = await genAI.models.generateContent({
