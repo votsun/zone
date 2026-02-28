@@ -60,7 +60,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="w-full max-w-md p-8 space-y-6 rounded-2xl border border-border shadow-sm">
         <div className="space-y-1 text-center">
-          <h1 className="text-3xl font-bold">FocusFlow</h1>
+          <h1 className="text-3xl font-bold">Zone</h1>
           <p className="text-muted-foreground text-sm">
             {isSignUp ? 'Create your account' : 'Welcome back'}
           </p>

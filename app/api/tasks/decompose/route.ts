@@ -6,30 +6,56 @@ import { buildDecomposePrompt } from '@/lib/gemini/prompts'
 export async function POST(request: Request) {
   const supabase = await createClient()
 
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
 
-  const { taskId, taskTitle } = await request.json()
+  const { taskId, taskTitle, energyLevel } = await request.json()
 
-  const prompt = buildDecomposePrompt(taskTitle)
-  const response = await genAI.models.generateContent({
-    model: 'gemini-2.0-flash',
-    contents: prompt,
-  })
-  const text = response.text ?? ''
-  const microSteps = JSON.parse(text)
+  if (!taskId || !taskTitle) {
+    return NextResponse.json(
+      { error: 'taskId and taskTitle are required' },
+      { status: 400 }
+    )
+  }
 
-  const stepsWithTaskId = microSteps.map((step: any) => ({
-    ...step,
-    task_id: taskId,
-  }))
+  try {
+    const prompt = buildDecomposePrompt(taskTitle, energyLevel)
+    const response = await genAI.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: prompt,
+    })
+    const text = response.text ?? ''
 
-  const { data, error } = await supabase
-    .from('micro_steps')
-    .insert(stepsWithTaskId)
-    .select()
+    // Gemini sometimes wraps JSON in markdown code fences
+    const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
+    const microSteps = JSON.parse(cleaned)
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    const stepsToInsert = microSteps.map((step: any) => ({
+      task_id: taskId,
+      description: step.description,
+      estimated_minutes: step.estimated_minutes,
+      step_order: step.step_order,
+      is_complete: false,
+    }))
 
-  return NextResponse.json(data, { status: 201 })
+    const { data, error } = await supabase
+      .from('micro_steps')
+      .insert(stepsToInsert)
+      .select()
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+
+    return NextResponse.json(data, { status: 201 })
+  } catch (err) {
+    return NextResponse.json(
+      { error: 'Failed to decompose task. AI response could not be parsed.' },
+      { status: 500 }
+    )
+  }
 }

@@ -1,41 +1,68 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
-import type { UpdateTaskInput } from '@/types'
 
-// PATCH — update a task
 export async function PATCH(
   request: Request,
   { params }: { params: { id: string } }
 ) {
   const supabase = await createClient()
 
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
 
-  const body: UpdateTaskInput = await request.json()
+  const body = await request.json()
+
+  const allowedFields = [
+    'title',
+    'category',
+    'priority',
+    'energy_level',
+    'deadline',
+    'is_complete',
+  ]
+
+  const sanitized: Record<string, any> = {}
+  for (const key of allowedFields) {
+    if (key in body) {
+      sanitized[key] = body[key]
+    }
+  }
+
+  if (Object.keys(sanitized).length === 0) {
+    return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 })
+  }
 
   const { data, error } = await supabase
     .from('tasks')
-    .update(body)
+    .update(sanitized)
     .eq('id', params.id)
     .eq('user_id', user.id)
     .select()
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
 
   return NextResponse.json(data)
 }
 
-// DELETE — delete a task
 export async function DELETE(
-  _request: Request,
+  request: Request,
   { params }: { params: { id: string } }
 ) {
   const supabase = await createClient()
 
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
 
   const { error } = await supabase
     .from('tasks')
@@ -43,7 +70,9 @@ export async function DELETE(
     .eq('id', params.id)
     .eq('user_id', user.id)
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
 
   return NextResponse.json({ success: true })
 }

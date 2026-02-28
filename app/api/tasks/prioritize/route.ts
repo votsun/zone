@@ -6,33 +6,62 @@ import { buildPriorityPrompt } from '@/lib/gemini/prompts'
 export async function POST(request: Request) {
   const supabase = await createClient()
 
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
 
   const { tasks } = await request.json()
 
-  const taskTitles = tasks.map((t: any) => t.title)
-
-  const prompt = buildPriorityPrompt(taskTitles)
-  const response = await genAI.models.generateContent({
-    model: 'gemini-2.0-flash',
-    contents: prompt,
-  })
-  const text = response.text ?? ''
-  const priorities = JSON.parse(text)
-
-  const updates = await Promise.all(
-    tasks.map((task: any, index: number) =>
-      supabase
-        .from('tasks')
-        .update({ priority: priorities[index].priority })
-        .eq('id', task.id)
-        .eq('user_id', user.id)
+  if (!tasks || !Array.isArray(tasks) || tasks.length === 0) {
+    return NextResponse.json(
+      { error: 'tasks array is required and must not be empty' },
+      { status: 400 }
     )
-  )
+  }
 
-  const hasError = updates.find(u => u.error)
-  if (hasError) return NextResponse.json({ error: 'Failed to update priorities' }, { status: 500 })
+  try {
+    const taskSummaries = tasks.map((t: any) => ({
+      title: t.title,
+      category: t.category,
+      energy_level: t.energy_level,
+    }))
 
-  return NextResponse.json({ success: true, priorities })
+    const prompt = buildPriorityPrompt(taskSummaries)
+    const response = await genAI.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: prompt,
+    })
+    const text = response.text ?? ''
+
+    const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
+    const priorities = JSON.parse(cleaned)
+
+    const updates = await Promise.all(
+      tasks.map((task: any, index: number) =>
+        supabase
+          .from('tasks')
+          .update({ priority: priorities[index].priority })
+          .eq('id', task.id)
+          .eq('user_id', user.id)
+      )
+    )
+
+    const failed = updates.find((u) => u.error)
+    if (failed) {
+      return NextResponse.json(
+        { error: 'Failed to update some priorities' },
+        { status: 500 }
+      )
+    }
+
+    return NextResponse.json({ success: true, priorities })
+  } catch (err) {
+    return NextResponse.json(
+      { error: 'Failed to prioritize tasks. AI response could not be parsed.' },
+      { status: 500 }
+    )
+  }
 }
