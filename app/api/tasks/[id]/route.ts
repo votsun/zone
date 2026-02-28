@@ -1,41 +1,49 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
-import type { CreateTaskInput } from '@/types'
+import type { UpdateTaskInput } from '@/types'
 
-// GET — fetch all tasks for logged in user
-export async function GET() {
+// PATCH — update a task
+export async function PATCH(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
+  const body: UpdateTaskInput = await request.json()
+
   const { data, error } = await supabase
     .from('tasks')
-    .select('*, micro_steps(*)')
+    .update(body)
+    .eq('id', params.id)
     .eq('user_id', user.id)
-    .order('created_at', { ascending: false })
+    .select()
+    .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
   return NextResponse.json(data)
 }
 
-// POST — create a new task
-export async function POST(request: Request) {
+// DELETE — delete a task
+export async function DELETE(
+  _request: Request,
+  { params }: { params: { id: string } }
+) {
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const body: CreateTaskInput = await request.json()
-
-  const { data, error } = await supabase
+  const { error } = await supabase
     .from('tasks')
-    .insert({ ...body, user_id: user.id })
-    .select()
-    .single()
+    .delete()
+    .eq('id', params.id)
+    .eq('user_id', user.id)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  return NextResponse.json(data, { status: 201 })
+  return NextResponse.json({ success: true })
 }

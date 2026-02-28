@@ -11,6 +11,7 @@ Rules:
 - Each step should take 5-15 minutes max
 - Use simple, clear language
 - Maximum 6 steps
+- Each step description must start with a verb and be hyper-specific
 
 Format:
 [
@@ -43,27 +44,5 @@ Format:
     "priority": "high"
   }
 ]
-`
-}
-
-// NOTE ORGANIZER
-export function buildNotePrompt(rawNote: string): string {
-  return `
-You are an ADHD productivity assistant. Organize the following brain dump note 
-into a clean structured format.
-
-Note: "${rawNote}"
-
-Rules:
-- Return ONLY a valid JSON object, no extra text
-- Keep language simple and concise
-
-Format:
-{
-  "summary": "one sentence summary",
-  "action_items": ["action 1", "action 2"],
-  "key_points": ["point 1", "point 2"],
-  "tags": ["tag1", "tag2"]
-}
 `
 }
