@@ -10,11 +10,7 @@
   },
   "dependencies": {
     "@google/genai": "^1.43.0",
-<<<<<<< Updated upstream
     "@radix-ui/react-progress": "^1.1.8",
-=======
-    "@google/generative-ai": "^0.24.1",
->>>>>>> Stashed changes
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.98.0",
     "canvas-confetti": "^1.9.4",
