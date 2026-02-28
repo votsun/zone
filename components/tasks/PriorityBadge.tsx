@@ -1,3 +1,4 @@
+'use client'
 import React from 'react'
 import { Priority, EnergyLevel } from '@/types/task'
 import { Badge } from '@/components/ui/badge'

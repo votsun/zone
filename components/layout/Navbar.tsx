@@ -14,7 +14,7 @@ export function Navbar() {
           <div className="bg-primary p-1 rounded-md">
             <BrainCircuit className="h-6 w-6 text-primary-foreground" />
           </div>
-          <span>FocusFlow</span>
+          <span>Zone</span>
         </Link>
 
         {/* Navigation Actions */}

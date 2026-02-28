@@ -29,6 +29,7 @@ export interface Task {
 
 export interface CreateTaskInput {
   title: string
+  description?: string
   category?: TaskCategory
   priority?: Priority
   energy_level?: EnergyLevel

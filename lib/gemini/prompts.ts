@@ -1,6 +1,7 @@
 export function buildDecomposePrompt(
   taskTitle: string,
-  energyLevel: string = 'medium'
+  energyLevel: string = 'medium',
+  descrption?: string
 ): string {
   return `
 You are an ADHD productivity assistant for an app called Zone.
