@@ -58,3 +58,50 @@ export async function PATCH(
 
   return NextResponse.json(data)
 }
+
+export async function DELETE(
+  _request: Request,
+  { params }: RouteContext
+) {
+  const { id } = await params
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const { data: subtask, error: subtaskError } = await supabase
+    .from('subtasks')
+    .select('id, task_id')
+    .eq('id', id)
+    .single()
+
+  if (subtaskError || !subtask) {
+    return NextResponse.json({ error: 'Subtask not found' }, { status: 404 })
+  }
+
+  const { data: task, error: taskError } = await supabase
+    .from('tasks')
+    .select('id')
+    .eq('id', subtask.task_id)
+    .eq('user_id', user.id)
+    .single()
+
+  if (taskError || !task) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
+  const { error } = await supabase
+    .from('subtasks')
+    .delete()
+    .eq('id', id)
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+
+  return NextResponse.json({ success: true })
+}
