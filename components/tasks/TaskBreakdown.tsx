@@ -14,6 +14,7 @@ interface TaskBreakdownProps {
   onCompleteTask: (taskId: string) => void
   isCompleting?: boolean
   isSkipping?: boolean
+  isGenerating?: boolean
 }
 
 export function TaskBreakdown({
@@ -23,8 +24,10 @@ export function TaskBreakdown({
   onCompleteTask,
   isCompleting = false,
   isSkipping = false,
+  isGenerating = false,
 }: TaskBreakdownProps) {
   if (!task.micro_steps || task.micro_steps.length === 0) {
+    if (isGenerating) return null
     return <div>No subtasks generated yet.</div>
   }
 
@@ -56,13 +59,17 @@ export function TaskBreakdown({
 
   return (
     <div className="w-full max-w-md mx-auto space-y-6">
-      {/* Visual Time Anchor / Progress Bar */}
+      {/* Visual Time Anchor / Progress Bar — high contrast vs pink background */}
       <div className="space-y-2">
-        <div className="flex justify-between text-sm font-medium text-muted-foreground">
+        <div className="flex justify-between text-sm font-medium text-[#0d3d3d]">
           <span>Task Progress</span>
           <span>{progressPercentage}% Complete</span>
         </div>
-        <Progress value={progressPercentage} className="h-3" />
+        <Progress
+          value={progressPercentage}
+          className="h-3 bg-teal-900/40"
+          indicatorColor="bg-teal-500"
+        />
       </div>
 
       {isAllComplete ? (

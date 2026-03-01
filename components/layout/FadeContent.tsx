@@ -10,6 +10,8 @@ interface FadeContentProps
   extends Omit<React.HTMLAttributes<HTMLDivElement>, "onComplete"> {
   children: React.ReactNode;
   container?: Element | string | null;
+  /** When true, animate on mount instead of on scroll (e.g. for modals) */
+  playOnMount?: boolean;
   blur?: boolean;
   duration?: number;
   ease?: string;
@@ -40,6 +42,7 @@ const getSeconds = (val: number): number =>
 export default function FadeContent({
   children,
   container,
+  playOnMount = false,
   blur = false,
   duration = 1000,
   ease: easeProp = "power2.out",
@@ -102,6 +105,14 @@ export default function FadeContent({
       ease,
     });
 
+    if (playOnMount) {
+      tl.play();
+      return () => {
+        tl.kill();
+        gsap.killTweensOf(el);
+      };
+    }
+
     const st = ScrollTrigger.create({
       trigger: el,
       scroller: (scrollerTarget as gsap.DOMTarget) ?? window,
@@ -116,6 +127,7 @@ export default function FadeContent({
       gsap.killTweensOf(el);
     };
   }, [
+    playOnMount,
     container,
     blur,
     duration,

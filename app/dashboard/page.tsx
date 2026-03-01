@@ -177,6 +177,13 @@ export default function Page() {
 
   return (
     <div className={styles.page}>
+      <span
+        className="fixed top-4 left-5 z-40 text-[1.85rem] font-extrabold tracking-tight text-white"
+        style={{ fontFamily: 'var(--font-playfair), ui-serif, serif' }}
+        aria-hidden
+      >
+        zone.
+      </span>
       <div className={styles.starfield} aria-hidden>
         {stars.map((star, i) => (
           <div
@@ -449,19 +456,26 @@ export default function Page() {
         <>
           <div className={styles.addBackdrop} onClick={closeAddTaskModal} />
           <div className={styles.addModal}>
-            <div className={styles.addModalHeader}>
-              <h2>New Task</h2>
-              <button
-                type="button"
-                className={styles.addCloseBtn}
-                onClick={closeAddTaskModal}
-                aria-label="Close add task modal"
-              >
-                <X size={16} />
-              </button>
-            </div>
+            <FadeContent
+              playOnMount
+              blur={true}
+              duration={900}
+              easing="ease-out"
+              initialOpacity={0}
+            >
+              <div className={styles.addModalHeader}>
+                <h2>New Task</h2>
+                <button
+                  type="button"
+                  className={styles.addCloseBtn}
+                  onClick={closeAddTaskModal}
+                  aria-label="Close add task modal"
+                >
+                  <X size={16} />
+                </button>
+              </div>
 
-            <form className={styles.addForm} onSubmit={handleSubmitNewTask}>
+              <form className={styles.addForm} onSubmit={handleSubmitNewTask}>
               <div className={styles.addInnerCard}>
                 <h3>What&apos;s on your mind?</h3>
 
@@ -531,6 +545,7 @@ export default function Page() {
                 </button>
               </div>
             </form>
+            </FadeContent>
           </div>
         </>
       )}

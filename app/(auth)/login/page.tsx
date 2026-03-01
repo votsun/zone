@@ -87,7 +87,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
+    <div className="min-h-screen flex items-center justify-center bg-transparent px-4">
       <div className="w-full max-w-md p-8 space-y-6 rounded-2xl border border-border shadow-sm bg-background">
         <div className="space-y-1 text-center">
           <h1 className="text-3xl font-bold">Zone</h1>

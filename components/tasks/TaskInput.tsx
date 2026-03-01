@@ -28,7 +28,7 @@ export function TaskInput({ onSubmit, isLoading }: TaskInputProps) {
       title,
       description, 
       energy_level: energy,
-      category: 'neutral', // Defaulting for now
+      category: 'neutral', 
     }, file || undefined)
   }
 
