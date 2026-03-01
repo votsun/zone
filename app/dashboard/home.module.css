@@ -1,0 +1,251 @@
+/* ── Fonts ───────────────────────────────────────────────────────────────────── */
+
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800&display=swap');
+
+/* ── Page ────────────────────────────────────────────────────────────────────── */
+
+.page {
+  min-height: 100vh;
+  width: 100%;
+  background: radial-gradient(circle at center, rgb(255, 224, 178), rgb(255, 138, 101));
+  font-family: 'Nunito', sans-serif;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── Content ─────────────────────────────────────────────────────────────────── */
+
+.content {
+  position: relative;
+  z-index: 1;
+  padding: 60px 24px 40px;
+  max-width: 480px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ── Greeting ────────────────────────────────────────────────────────────────── */
+
+.greeting h1 {
+  font-size: 28px;
+  font-weight: 800;
+  color: black;
+  letter-spacing: -0.3px;
+}
+
+.greeting p {
+  font-size: 15px;
+  color: rgba(10, 22, 132, 0.55);
+  margin-top: 4px;
+  font-weight: 400;
+}
+
+/* ── Slide indicator dots ────────────────────────────────────────────────────── */
+
+.dots {
+  display: flex;
+  gap: 6px;
+  align-self: center;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.2s ease;
+}
+
+.dotActive {
+  background: white;
+  width: 20px;           /* active dot stretches into a pill shape */
+  border-radius: 3px;
+}
+
+/* ── Slider container ────────────────────────────────────────────────────────── */
+
+.slider {
+  display: flex;
+  overflow-x: scroll;
+  scroll-snap-type: x mandatory;  /* locks scrolling to exact slide boundaries */
+  scroll-behavior: smooth;
+  gap: 24px;
+  padding-bottom: 8px;
+  /* hide the scrollbar visually — swiping still works */
+  scrollbar-width: none;
+}
+
+.slider::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── Individual slide ────────────────────────────────────────────────────────── */
+
+.slide {
+  min-width: 100%;          /* each slide takes up the full container width */
+  scroll-snap-align: start; /* snap to the start of each slide */
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── Slide header (title + count) ────────────────────────────────────────────── */
+
+.slideHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.slideTitle {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.slideCount {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.35);
+  font-weight: 500;
+}
+
+/* ── Task list ───────────────────────────────────────────────────────────────── */
+
+.taskList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ── Task card (shared base) ─────────────────────────────────────────────────── */
+
+.taskCard {
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 18px;
+  padding: 18px;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  backdrop-filter: blur(12px);
+}
+
+.taskCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+/* ── Completed card variant ──────────────────────────────────────────────────── */
+
+.taskCardDone {
+  background: rgba(255, 255, 255, 0.45); /* more transparent to feel "done" */
+  cursor: default;
+}
+
+.taskCardDone:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* ── Featured layout (title + right side) ────────────────────────────────────── */
+
+.taskCardFeatured {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.taskCardLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.taskCardRight {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #888;
+  flex-shrink: 0;
+}
+
+/* ── Text styles ─────────────────────────────────────────────────────────────── */
+
+.taskTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+.taskTitleDone {
+  font-size: 15px;
+  font-weight: 700;
+  color: #2d0a0a;
+  text-decoration: line-through; /* strikethrough on completed tasks */
+}
+
+.taskMeta {
+  font-size: 13px;
+  color: #260a0a;
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.taskDuration {
+  font-size: 13px;
+  color: #888;
+  font-weight: 500;
+}
+
+.checkIcon {
+  color: #09672b; /* green tick on completed cards */
+}
+
+/* ── Green dot (Task 2 meta) ─────────────────────────────────────────────────── */
+
+.dotGreen {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #de4a92;
+  flex-shrink: 0;
+}
+
+/* ── Empty state ─────────────────────────────────────────────────────────────── */
+
+.emptyState {
+  text-align: center;
+  padding: 32px 0;
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.4);
+  font-weight: 500;
+}
+
+/* ── FAB (+ button) ──────────────────────────────────────────────────────────── */
+
+.fab {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #f08080;
+  border: none;
+  display: grid;
+  place-items: center;
+  color: white;
+  cursor: pointer;
+  align-self: flex-end;
+  box-shadow: 0 4px 20px rgba(240, 128, 128, 0.5);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.fab:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 28px rgba(240, 128, 128, 0.6);
+}
