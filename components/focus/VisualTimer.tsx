@@ -142,10 +142,7 @@ export function VisualTimer({
               <div className={cn('font-semibold', expanded ? 'text-5xl' : 'text-3xl')}>
                 {formattedTimer}
               </div>
-              <div className={cn('mt-1 font-medium text-slate-600', expanded ? 'text-sm' : 'text-xs')}>
-                {Math.ceil(secondsLeft / 60)} mins left
-              </div>
-              <div className="mt-0.5 text-[10px] uppercase tracking-wide text-slate-500">
+              <div className="mt-1 text-[10px] uppercase tracking-wide text-slate-500">
                 {progressPercentage}% done
               </div>
             </div>
