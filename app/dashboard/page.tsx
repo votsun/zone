@@ -7,6 +7,7 @@ import { initialTasks, type Tasks } from "./data";
 import { createClient } from "@/lib/supabase/client";
 
 export default function Page() {
+  const [selectedTask, setSelectedTask] = useState<Tasks | null>(null)
   const [name, setName] = useState("there"); // fallback while loading
   useEffect(() => {
     const supabase = createClient();
@@ -60,7 +61,6 @@ export default function Page() {
 
   return (
     <div className={styles.page}>
-
       {/* Stars in the background */}
       <div className={styles.starfield} aria-hidden>
         {Array.from({ length: 60 }).map((_, i) => (
@@ -123,7 +123,7 @@ export default function Page() {
                 <div
                   key={task.id}
                   className={`${styles.taskCard} ${styles.taskCardFeatured}`}
-                  onClick={() => completeTask(task.id)}
+                  onClick={() => setSelectedTask(task)}
                 >
                   <div className={styles.taskCardLeft}>
                     <span className={styles.taskTitle}>{task.title}</span>
@@ -183,6 +183,79 @@ export default function Page() {
         </button>
 
       </div>
+      {/* ── Task Detail Overlay (blurred background) ─────────── */}
+{selectedTask && (
+  <>
+    {/* Backdrop — blurs the background */}
+    <div
+      className={styles.backdrop}
+      onClick={() => setSelectedTask(null)}
+    />
+
+    {/* Detail Panel */}
+    <div className={styles.detailPanel}>
+      <div className={styles.detailHeader}>
+        <h2 className={styles.detailTitle}>{selectedTask.title}</h2>
+        <button
+          className={styles.closeBtn}
+          onClick={() => setSelectedTask(null)}
+        >✕</button>
+      </div>
+
+      {/* Subtask list */}
+      <div className={styles.subtaskList}>
+        {selectedTask.subtasks.length === 0 ? (
+          <p className={styles.emptyState}>No subtasks yet.</p>
+        ) : (
+          selectedTask.subtasks.map((sub) => (
+            <div key={sub.id} className={`${styles.subtaskRow} ${sub.done ? styles.subtaskDone : ''}`}>
+              <div className={styles.subtaskLeft}>
+                <span className={styles.subtaskTitle}>{sub.title}</span>
+                <span className={styles.subtaskMeta}>{sub.duration} min</span>
+              </div>
+              {/* Timer block visual */}
+              <div className={styles.timerBlock}>
+                <div
+                  className={styles.timerFill}
+                  style={{ width: sub.done ? '100%' : '0%' }}
+                />
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Total time */}
+      {selectedTask.subtasks.length > 0 && (
+        <p className={styles.totalTime}>
+          ⏱ {selectedTask.subtasks.reduce((t, s) => t + s.duration, 0)} min total
+        </p>
+      )}
+
+      {/* Action buttons */}
+      <div className={styles.detailActions}>
+        <button
+          className={styles.startBtn}
+          onClick={() => {
+            // TODO: start focus mode
+            console.log('Start focus for', selectedTask.title)
+          }}
+        >
+          ▶ Start
+        </button>
+        <button
+          className={styles.completeBtn}
+          onClick={() => {
+            completeTask(selectedTask.id)
+            setSelectedTask(null)
+          }}
+        >
+                ✓ Mark Complete
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
