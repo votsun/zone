@@ -18,10 +18,11 @@ ADHD focus block durations (use these to estimate time per step):
 
 Rules:
 - Return ONLY a valid JSON array, no markdown, no backticks, no extra text
-- Each step description must start with a verb and be hyper-specific
+- Based on the energy time limits, create steps
+- Steps must start with a verb and be hyper-specific
   (NOT "do research" → instead "open Google Scholar and search for 3 sources about X")
 - The first step should be the easiest possible action to start (task initiation is the hardest part for ADHD)
-- Estimated minutes per step should match the energy level ranges above
+- Return estimated time based on step
 - Generate as many or as few steps as the task genuinely needs — do not pad or limit artificially
 
 Format:

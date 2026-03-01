@@ -53,9 +53,6 @@ export function FocusBlock({
         onComplete={() => console.log("Time's up for this step!")} 
       />
 
-      <p className="text-center text-sm text-muted-foreground italic">
-        "Just focus on this one piece. You've got this."
-      </p>
     </div>
   )
 }
