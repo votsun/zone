@@ -158,7 +158,6 @@ export default function TaskDetailPage() {
         micro_steps: current.micro_steps.filter((step) => step.id !== stepId),
       }
     })
-    setViewState('breakdown')
 
     const response = await fetch(`/api/subtasks/${stepId}`, {
       method: 'DELETE',
