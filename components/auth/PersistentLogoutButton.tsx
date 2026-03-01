@@ -22,6 +22,9 @@ export function PersistentLogoutButton() {
     setIsLoggingOut(true)
 
     try {
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem('zone-seen-intro')
+      }
       const supabase = createClient()
       await supabase.auth.signOut()
       router.push('/login')

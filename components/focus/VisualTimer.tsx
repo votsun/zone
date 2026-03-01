@@ -154,7 +154,7 @@ export function VisualTimer({
             size="lg"
             variant="outline"
             onClick={() => adjustByFiveMinutes(-5)}
-            className="h-11 rounded-full px-4 text-base"
+            className="h-11 rounded-full px-4 text-base text-black border-black/60 hover:bg-black/10 hover:text-black"
             disabled={secondsLeft <= 5 * 60}
             aria-label="Subtract five minutes"
           >
@@ -166,7 +166,7 @@ export function VisualTimer({
             size="lg"
             variant="outline"
             onClick={toggleTimer}
-            className="h-11 rounded-full px-6 text-base"
+            className="h-11 rounded-full px-6 text-base text-black border-black/60 hover:bg-black/10 hover:text-black"
             aria-label={isActive ? 'Pause timer' : 'Resume timer'}
           >
             {isActive ? (
@@ -186,7 +186,7 @@ export function VisualTimer({
             size="lg"
             variant="outline"
             onClick={() => adjustByFiveMinutes(5)}
-            className="h-11 rounded-full px-4 text-base"
+            className="h-11 rounded-full px-4 text-base text-black border-black/60 hover:bg-black/10 hover:text-black"
             aria-label="Add five minutes"
           >
             <Plus className="h-4 w-4" />

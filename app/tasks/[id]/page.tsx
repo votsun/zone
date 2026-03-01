@@ -267,7 +267,7 @@ export default function TaskDetailPage() {
           {(!task.micro_steps || task.micro_steps.length === 0) && (
             <div className="space-y-3">
               {isGenerating && (
-                <p className="text-xl font-semibold text-black">Generating subtasks...</p>
+                <p className="text-base font-normal text-white italic">Generating subtasks...</p>
               )}
               {generateError && (
                 <p className="text-sm text-red-500">{generateError}</p>

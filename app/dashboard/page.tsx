@@ -29,6 +29,8 @@ export default function Page() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [name, setName] = useState('there')
   const [slide, setSlide] = useState(0)
+  const [hasCheckedIntro, setHasCheckedIntro] = useState(false)
+  const [showIntroTagline, setShowIntroTagline] = useState(true)
 
   const sliderRef = useRef<HTMLDivElement>(null)
 
@@ -68,6 +70,14 @@ export default function Page() {
     }
 
     getUser()
+  }, [])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (sessionStorage.getItem('zone-seen-intro')) {
+      setShowIntroTagline(false)
+    }
+    setHasCheckedIntro(true)
   }, [])
 
   const selectedTask = useMemo(
@@ -212,10 +222,41 @@ export default function Page() {
           </div>
         </FadeContent>
 
+        {hasCheckedIntro && showIntroTagline && (
+          <div className="fixed inset-0 z-20 flex items-center justify-center pointer-events-none">
+            <FadeContent
+              playOnMount
+              blur={true}
+              duration={800}
+              easing="ease-out"
+              initialOpacity={0}
+              disappearAfter={2.2}
+              disappearDuration={0.6}
+              onDisappearanceComplete={() => {
+                if (typeof window !== 'undefined') {
+                  sessionStorage.setItem('zone-seen-intro', '1')
+                }
+                setShowIntroTagline(false)
+              }}
+              className="text-center px-6 max-w-2xl"
+            >
+              <p
+                className="text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight"
+                style={{ fontFamily: 'var(--font-playfair), ui-serif, serif', textShadow: '0 2px 20px rgba(0,0,0,0.3)' }}
+              >
+                Studying more efficiently, studying more effectively
+              </p>
+            </FadeContent>
+          </div>
+        )}
+
+        {hasCheckedIntro && !showIntroTagline && (
         <FadeContent
+          playOnMount
           blur={true}
           duration={1000}
-          delay={750}
+          delay={0}
+          easing="ease-out"
           initialOpacity={0}
         >
           <div className={styles.dots}>
@@ -361,6 +402,7 @@ export default function Page() {
           </div>
         </div>
         </FadeContent>
+        )}
 
         <button
           className={styles.fab}

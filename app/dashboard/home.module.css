@@ -255,6 +255,8 @@
   align-self: flex-end;
   box-shadow: 0 4px 20px rgba(240, 128, 128, 0.5);
   transition: transform 0.15s, box-shadow 0.15s;
+  position: relative;
+  z-index: 40;
 }
 
 .fab:hover {
