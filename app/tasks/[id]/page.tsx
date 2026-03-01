@@ -230,7 +230,7 @@ export default function TaskDetailPage() {
   const totalSteps = task.micro_steps?.length ?? 0
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-transparent">
 
       {/* Reward View */}
       {viewState === 'reward' && (
@@ -265,12 +265,13 @@ export default function TaskDetailPage() {
             onCompleteTask={handleCompleteTask}
             isCompleting={isCompletingStep || isCompletingTask}
             isSkipping={isSkippingStep}
+            isGenerating={isGenerating}
           />
 
           {(!task.micro_steps || task.micro_steps.length === 0) && (
             <div className="space-y-3">
               {isGenerating && (
-                <p className="text-sm text-muted-foreground">Generating subtasks...</p>
+                <p className="text-base font-normal text-white italic">Generating subtasks...</p>
               )}
               {generateError && (
                 <p className="text-sm text-red-500">{generateError}</p>

@@ -22,6 +22,8 @@ export default function Page() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [name, setName] = useState('there')
   const [slide, setSlide] = useState(0)
+  const [hasCheckedIntro, setHasCheckedIntro] = useState(false)
+  const [showIntroTagline, setShowIntroTagline] = useState(true)
 
   const sliderRef = useRef<HTMLDivElement>(null)
 
@@ -52,6 +54,14 @@ export default function Page() {
     }
 
     getUser()
+  }, [])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (sessionStorage.getItem('zone-seen-intro')) {
+      setShowIntroTagline(false)
+    }
+    setHasCheckedIntro(true)
   }, [])
 
   const selectedTask = useMemo(
@@ -161,6 +171,28 @@ export default function Page() {
 
   return (
     <div className={styles.page}>
+      <span
+        className="fixed top-4 left-5 z-40 text-[1.85rem] font-extrabold tracking-tight text-white"
+        style={{ fontFamily: 'var(--font-playfair), ui-serif, serif' }}
+        aria-hidden
+      >
+        zone.
+      </span>
+      <div className={styles.starfield} aria-hidden>
+        {stars.map((star, i) => (
+          <div
+            key={i}
+            className={styles.star}
+            style={{
+              left: star.left,
+              top: star.top,
+              animationDelay: star.animationDelay,
+              opacity: star.opacity,
+            }}
+          />
+        ))}
+      </div>
+
       <div className={styles.content}>
         <div className={styles.greeting}>
           <div
@@ -177,10 +209,41 @@ export default function Page() {
           </div>
         </div>
 
+        {hasCheckedIntro && showIntroTagline && (
+          <div className="fixed inset-0 z-20 flex items-center justify-center pointer-events-none">
+            <FadeContent
+              playOnMount
+              blur={true}
+              duration={800}
+              easing="ease-out"
+              initialOpacity={0}
+              disappearAfter={2.2}
+              disappearDuration={0.6}
+              onDisappearanceComplete={() => {
+                if (typeof window !== 'undefined') {
+                  sessionStorage.setItem('zone-seen-intro', '1')
+                }
+                setShowIntroTagline(false)
+              }}
+              className="text-center px-6 max-w-2xl"
+            >
+              <p
+                className="text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight"
+                style={{ fontFamily: 'var(--font-playfair), ui-serif, serif', textShadow: '0 2px 20px rgba(0,0,0,0.3)' }}
+              >
+                Studying more efficiently, studying more effectively
+              </p>
+            </FadeContent>
+          </div>
+        )}
+
+        {hasCheckedIntro && !showIntroTagline && (
         <FadeContent
+          playOnMount
           blur={true}
           duration={1000}
-          delay={750}
+          delay={0}
+          easing="ease-out"
           initialOpacity={0}
         >
           <div className={styles.dots}>
@@ -326,6 +389,7 @@ export default function Page() {
           </div>
         </div>
         </FadeContent>
+        )}
 
         <button
           className={styles.fab}
@@ -421,19 +485,26 @@ export default function Page() {
         <>
           <div className={styles.addBackdrop} onClick={closeAddTaskModal} />
           <div className={styles.addModal}>
-            <div className={styles.addModalHeader}>
-              <h2>New Task</h2>
-              <button
-                type="button"
-                className={styles.addCloseBtn}
-                onClick={closeAddTaskModal}
-                aria-label="Close add task modal"
-              >
-                <X size={16} />
-              </button>
-            </div>
+            <FadeContent
+              playOnMount
+              blur={true}
+              duration={900}
+              easing="ease-out"
+              initialOpacity={0}
+            >
+              <div className={styles.addModalHeader}>
+                <h2>New Task</h2>
+                <button
+                  type="button"
+                  className={styles.addCloseBtn}
+                  onClick={closeAddTaskModal}
+                  aria-label="Close add task modal"
+                >
+                  <X size={16} />
+                </button>
+              </div>
 
-            <form className={styles.addForm} onSubmit={handleSubmitNewTask}>
+              <form className={styles.addForm} onSubmit={handleSubmitNewTask}>
               <div className={styles.addInnerCard}>
                 <h3>What&apos;s on your mind?</h3>
 
@@ -503,6 +574,7 @@ export default function Page() {
                 </button>
               </div>
             </form>
+            </FadeContent>
           </div>
         </>
       )}

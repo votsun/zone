@@ -19,7 +19,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background: radial-gradient(circle at top, #3b0a57, #1f002e);
+  background: transparent;
   font-family: 'Nunito', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 

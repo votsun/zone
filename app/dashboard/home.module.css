@@ -266,6 +266,8 @@
   align-self: flex-end;
   box-shadow: 0 4px 20px rgba(240, 128, 128, 0.5);
   transition: transform 0.15s, box-shadow 0.15s;
+  position: relative;
+  z-index: 40;
 }
 
 .fab:hover {
@@ -400,7 +402,7 @@
 .startBtn {
   flex: 1;
   padding: 14px;
-  background: linear-gradient(135deg, #f08080, #de4a92);
+  /* background: linear-gradient(135deg, #f08080, #de4a92); */
   color: white;
   border: none;
   border-radius: 14px;
@@ -437,13 +439,13 @@
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  width: min(840px, calc(100vw - 32px));
+  width: min(640px, calc(100vw - 32px));
   max-height: calc(100vh - 36px);
   overflow-y: auto;
   background: #f3f3f5;
-  border-radius: 24px;
+  border-radius: 20px;
   border: 1px solid #dfe3ec;
-  padding: 18px 22px 22px;
+  padding: 14px 18px 18px;
   z-index: 29;
 }
 
@@ -451,19 +453,19 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 
 .addModalHeader h2 {
-  font-size: 40px;
+  font-size: 28px;
   line-height: 1;
   font-weight: 800;
   color: #161d30;
 }
 
 .addCloseBtn {
-  width: 34px;
-  height: 34px;
+  width: 30px;
+  height: 30px;
   border: none;
   border-radius: 50%;
   background: #ececf1;
@@ -480,22 +482,22 @@
 .addInnerCard {
   background: #f7f8fb;
   border: 2px solid #d7dde7;
-  border-radius: 18px;
-  padding: 24px;
+  border-radius: 16px;
+  padding: 18px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .addInnerCard h3 {
-  font-size: 22px;
+  font-size: 19px;
   font-weight: 800;
   color: #111726;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .addInnerCard label {
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 700;
   color: #202637;
 }
@@ -504,17 +506,17 @@
 .addInnerCard textarea {
   width: 100%;
   border: 2px solid #d6dde9;
-  border-radius: 13px;
+  border-radius: 11px;
   background: #f6f7fa;
   color: #1a1f2f;
-  padding: 14px 16px;
-  font-size: 20px;
+  padding: 11px 14px;
+  font-size: 17px;
   outline: none;
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--font-playfair), ui-serif, serif;
 }
 
 .addInnerCard textarea {
-  min-height: 120px;
+  min-height: 96px;
   resize: vertical;
 }
 
@@ -526,12 +528,12 @@
 .uploadZone {
   position: relative;
   border: 2px dashed #cfd9e8;
-  border-radius: 14px;
-  padding: 22px 18px;
+  border-radius: 12px;
+  padding: 16px 14px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
   background: #f7f9fc;
   cursor: pointer;
 }
@@ -549,46 +551,46 @@
 
 .uploadZone p {
   margin: 0;
-  font-size: 18px;
+  font-size: 15px;
   color: #222b3d;
   font-weight: 700;
 }
 
 .uploadZone span {
-  font-size: 15px;
+  font-size: 13px;
   color: #667991;
 }
 
 .energyWrap {
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
 .energyWrap h4 {
-  margin-bottom: 10px;
-  font-size: 22px;
+  margin-bottom: 8px;
+  font-size: 18px;
   color: #131a2a;
 }
 
 .energyOptions {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
+  gap: 10px;
 }
 
 .energyBtn {
-  height: 74px;
+  height: 62px;
   border: 2px solid #d3dbe9;
-  border-radius: 12px;
+  border-radius: 10px;
   background: #f3f5f9;
   color: #1a2234;
-  font-size: 20px;
+  font-size: 17px;
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
   cursor: pointer;
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--font-playfair), ui-serif, serif;
 }
 
 .energyBtnActiveLow {
@@ -608,20 +610,20 @@
 }
 
 .addSubmitBtn {
-  margin-top: 8px;
+  margin-top: 6px;
   border: none;
-  border-radius: 12px;
-  height: 72px;
+  border-radius: 10px;
+  height: 52px;
   background: #091839;
   color: #f5f7fb;
-  font-size: 34px;
+  font-size: 22px;
   font-weight: 800;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
   cursor: pointer;
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--font-playfair), ui-serif, serif;
 }
 
 .addSubmitBtn:disabled {
@@ -631,30 +633,30 @@
 
 @media (max-width: 760px) {
   .addModalHeader h2 {
-    font-size: 30px;
+    font-size: 24px;
   }
 
   .addInnerCard {
-    padding: 16px;
+    padding: 14px;
   }
 
   .addInnerCard h3 {
-    font-size: 20px;
+    font-size: 17px;
   }
 
   .addInnerCard label {
-    font-size: 16px;
+    font-size: 14px;
   }
 
   .addInnerCard input[type='text'],
   .addInnerCard textarea,
   .uploadZone p,
   .energyBtn {
-    font-size: 16px;
+    font-size: 15px;
   }
 
   .addSubmitBtn {
-    height: 58px;
-    font-size: 24px;
+    height: 52px;
+    font-size: 22px;
   }
 }
