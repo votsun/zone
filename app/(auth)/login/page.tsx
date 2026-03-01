@@ -1,12 +1,18 @@
 'use client'
 
 import { createClient } from '@/lib/supabase/client'
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useMemo, useState } from 'react'
+
+function getCallbackUrl() {
+  if (typeof window === 'undefined') return undefined
+  return new URL('/callback', window.location.origin).toString()
+}
 
 export default function LoginPage() {
   const supabase = createClient()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isSignUp, setIsSignUp] = useState(false)
@@ -14,19 +20,29 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
 
+  const nextPath = useMemo(() => {
+    const next = searchParams.get('next')
+    if (!next || !next.startsWith('/') || next.startsWith('//')) return '/dashboard'
+    return next
+  }, [searchParams])
+
   async function handleEmailAuth() {
     setLoading(true)
     setError('')
     setMessage('')
 
     if (isSignUp) {
+      const callbackUrl = getCallbackUrl()
       const { error } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-        },
+        options: callbackUrl
+          ? {
+              emailRedirectTo: `${callbackUrl}?next=${encodeURIComponent(nextPath)}`,
+            }
+          : undefined,
       })
+
       if (error) {
         setError(error.message)
       } else {
@@ -37,10 +53,12 @@ export default function LoginPage() {
         email,
         password,
       })
+
       if (error) {
         setError(error.message)
       } else {
-        router.push('/dashboard')
+        router.push(nextPath)
+        router.refresh()
       }
     }
 
@@ -48,17 +66,29 @@ export default function LoginPage() {
   }
 
   async function handleGoogleLogin() {
-    await supabase.auth.signInWithOAuth({
+    setLoading(true)
+    setError('')
+
+    const callbackUrl = getCallbackUrl()
+
+    const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
+      options: callbackUrl
+        ? {
+            redirectTo: `${callbackUrl}?next=${encodeURIComponent(nextPath)}`,
+          }
+        : undefined,
     })
+
+    if (error) {
+      setError(error.message)
+      setLoading(false)
+    }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="w-full max-w-md p-8 space-y-6 rounded-2xl border border-border shadow-sm">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4">
+      <div className="w-full max-w-md p-8 space-y-6 rounded-2xl border border-border shadow-sm bg-background">
         <div className="space-y-1 text-center">
           <h1 className="text-3xl font-bold">Zone</h1>
           <p className="text-muted-foreground text-sm">
@@ -104,7 +134,8 @@ export default function LoginPage() {
 
           <button
             onClick={handleGoogleLogin}
-            className="w-full py-2 rounded-lg border border-border text-sm font-medium hover:bg-muted transition"
+            disabled={loading}
+            className="w-full py-2 rounded-lg border border-border text-sm font-medium hover:bg-muted transition disabled:opacity-50"
           >
             Continue with Google
           </button>
