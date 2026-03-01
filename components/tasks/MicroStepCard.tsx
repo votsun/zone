@@ -38,7 +38,7 @@ export function MicroStepCard({ step, stepNumber, totalSteps, onComplete }: Micr
           onClick={() => onComplete(step.id)}
         >
           <CheckCircle className="mr-2 h-5 w-5" />
-          Done, what's next?
+          Done, what&apos;s next?
         </Button>
       </CardFooter>
     </Card>

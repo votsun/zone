@@ -19,17 +19,44 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { taskId, taskTitle, energyLevel } = await request.json()
+  const { taskId, energyLevel } = await request.json()
 
-  if (!taskId || !taskTitle) {
+  if (!taskId) {
     return NextResponse.json(
-      { error: 'taskId and taskTitle are required' },
+      { error: 'taskId is required' },
       { status: 400 }
     )
   }
 
   try {
-    const prompt = buildDecomposePrompt(taskTitle, energyLevel)
+    const { data: task, error: taskError } = await supabase
+      .from('tasks')
+      .select('id, title, energy_level, user_id')
+      .eq('id', taskId)
+      .eq('user_id', user.id)
+      .single()
+
+    if (taskError || !task) {
+      return NextResponse.json({ error: 'Task not found' }, { status: 404 })
+    }
+
+    const { data: existingSteps, error: existingError } = await supabase
+      .from('subtasks')
+      .select('*')
+      .eq('task_id', taskId)
+      .order('step_order', { ascending: true })
+
+    if (existingError) {
+      return NextResponse.json({ error: existingError.message }, { status: 500 })
+    }
+
+    if (existingSteps && existingSteps.length > 0) {
+      return NextResponse.json(existingSteps, { status: 200 })
+    }
+
+    const taskTitle = String(task.title || 'Untitled task')
+    const resolvedEnergyLevel = energyLevel || task.energy_level || 'medium'
+    const prompt = buildDecomposePrompt(taskTitle, resolvedEnergyLevel)
     const response = await genAI.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: prompt,
@@ -60,11 +87,11 @@ export async function POST(request: Request) {
             },
           ]
 
-    const stepsToInsert = normalizedSteps.map((step) => ({
+    const stepsToInsert = normalizedSteps.map((step, index) => ({
       task_id: taskId,
       description: step.description,
       estimated_minutes: step.estimated_minutes,
-      step_order: step.step_order,
+      step_order: step.step_order || index + 1,
       is_complete: false,
     }))
 

@@ -3,6 +3,21 @@ import { NextResponse } from 'next/server'
 import { genAI } from '@/lib/gemini/client'
 import { buildPriorityPrompt } from '@/lib/gemini/prompts'
 
+type PriorityInputStep = {
+  estimated_minutes?: number | null
+}
+
+type PriorityInputTask = {
+  id: string
+  title: string
+  deadline?: string | null
+  micro_steps?: PriorityInputStep[]
+}
+
+type ModelPriority = {
+  priority: 'high' | 'medium' | 'low'
+}
+
 export async function POST(request: Request) {
   const supabase = await createClient()
 
@@ -13,7 +28,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { tasks } = await request.json()
+  const { tasks } = (await request.json()) as { tasks?: PriorityInputTask[] }
 
   if (!tasks || !Array.isArray(tasks) || tasks.length === 0) {
     return NextResponse.json(
@@ -24,10 +39,10 @@ export async function POST(request: Request) {
 
   try {
     // Calculate estimated total minutes per task from their micro_steps
-    const taskSummaries = tasks.map((t: any) => {
+    const taskSummaries = tasks.map((t) => {
       const totalMinutes = t.micro_steps
         ? t.micro_steps.reduce(
-            (sum: number, step: any) => sum + (step.estimated_minutes || 0),
+            (sum, step) => sum + (step.estimated_minutes || 0),
             0
           )
         : null
@@ -47,13 +62,20 @@ export async function POST(request: Request) {
     const text = response.text ?? ''
 
     const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
-    const priorities = JSON.parse(cleaned)
+    const parsed = JSON.parse(cleaned) as unknown
+    if (!Array.isArray(parsed)) {
+      return NextResponse.json(
+        { error: 'AI response format invalid' },
+        { status: 500 }
+      )
+    }
+    const priorities = parsed as ModelPriority[]
 
     const updates = await Promise.all(
-      tasks.map((task: any, index: number) =>
+      tasks.map((task, index) =>
         supabase
           .from('tasks')
-          .update({ priority: priorities[index].priority })
+          .update({ priority: priorities[index]?.priority || 'medium' })
           .eq('id', task.id)
           .eq('user_id', user.id)
       )
@@ -68,7 +90,7 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ success: true, priorities })
-  } catch (err) {
+  } catch {
     return NextResponse.json(
       { error: 'Failed to prioritize tasks. AI response could not be parsed.' },
       { status: 500 }

@@ -1,11 +1,11 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Task, MicroStep } from '@/types/task' // Adjust path to where your types are stored
+import { Task } from '@/types/task'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
-import { CheckCircle, ChevronRight, Trophy } from 'lucide-react'
+import { CheckCircle, Trophy } from 'lucide-react'
 
 interface TaskBreakdownProps {
   task: Task
@@ -60,7 +60,7 @@ export function TaskBreakdown({ task, onCompleteStep, onCompleteTask }: TaskBrea
           <CardContent className="pt-6 space-y-4 flex flex-col items-center">
             <Trophy className="w-16 h-16 text-yellow-500" />
             <h3 className="text-xl font-bold">You did it!</h3>
-            <p className="text-muted-foreground">Task "{task.title}" is complete.</p>
+            <p className="text-muted-foreground">Task &quot;{task.title}&quot; is complete.</p>
           </CardContent>
         </Card>
       ) : (
@@ -87,7 +87,7 @@ export function TaskBreakdown({ task, onCompleteStep, onCompleteTask }: TaskBrea
               onClick={handleCompleteCurrent}
             >
               <CheckCircle className="mr-2 h-5 w-5" />
-              Done, what's next?
+              Done, what&apos;s next?
             </Button>
           </CardFooter>
         </Card>

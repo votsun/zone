@@ -19,6 +19,7 @@ export default function Page() {
   const router = useRouter()
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null)
   const [creatingTask, setCreatingTask] = useState(false)
+  const [loggingOut, setLoggingOut] = useState(false)
   const [actionError, setActionError] = useState<string | null>(null)
   const [name, setName] = useState('there')
   const [slide, setSlide] = useState(0)
@@ -136,6 +137,28 @@ export default function Page() {
     }
   }
 
+  const handleLogout = async () => {
+    if (loggingOut) return
+    setActionError(null)
+    setLoggingOut(true)
+
+    try {
+      const supabase = createClient()
+      const { error: signOutError } = await supabase.auth.signOut()
+      if (signOutError) {
+        throw new Error(signOutError.message)
+      }
+      router.push('/login')
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : 'Failed to log out'
+      setActionError(message)
+      window.alert(`Could not log out: ${message}`)
+    } finally {
+      setLoggingOut(false)
+    }
+  }
+
   return (
     <div className={styles.page}>
       <div className={styles.starfield} aria-hidden>
@@ -154,9 +177,18 @@ export default function Page() {
       </div>
 
       <div className={styles.content}>
-        <div className={styles.greeting}>
-          <h1>Hi, {name} 👋</h1>
-          <p>Today&apos;s Focus</p>
+        <div className={styles.topRow}>
+          <div className={styles.greeting}>
+            <h1>Hi, {name} 👋</h1>
+            <p>Today&apos;s Focus</p>
+          </div>
+          <button
+            className={styles.logoutBtn}
+            onClick={() => void handleLogout()}
+            disabled={loggingOut}
+          >
+            {loggingOut ? 'Logging out...' : 'Logout'}
+          </button>
         </div>
 
         <div className={styles.dots}>

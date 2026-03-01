@@ -16,19 +16,22 @@ export function VisualTimer({ minutes, onComplete }: VisualTimerProps) {
   const [isActive, setIsActive] = useState(false)
 
   useEffect(() => {
-    let interval: NodeJS.Timeout
+    if (!isActive) return
 
-    if (isActive && secondsLeft > 0) {
-      interval = setInterval(() => {
-        setSecondsLeft((prev) => prev - 1)
-      }, 1000)
-    } else if (secondsLeft === 0) {
-      setIsActive(false)
-      if (onComplete) onComplete()
-    }
+    const interval = setInterval(() => {
+      setSecondsLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval)
+          setIsActive(false)
+          onComplete?.()
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
 
     return () => clearInterval(interval)
-  }, [isActive, secondsLeft, onComplete])
+  }, [isActive, onComplete])
 
   const toggleTimer = () => setIsActive(!isActive)
   const resetTimer = () => {

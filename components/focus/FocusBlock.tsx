@@ -50,11 +50,11 @@ export function FocusBlock({
       {/* The Time Anchor - VisualTimer */}
       <VisualTimer 
         minutes={currentStep.estimated_minutes} 
-        onComplete={() => console.log("Time's up for this step!")} 
+        onComplete={() => onCompleteStep(currentStep.id)}
       />
 
       <p className="text-center text-sm text-muted-foreground italic">
-        "Just focus on this one piece. You've got this."
+        &quot;Just focus on this one piece. You&apos;ve got this.&quot;
       </p>
     </div>
   )

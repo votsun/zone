@@ -28,6 +28,13 @@
 
 /* ── Greeting ────────────────────────────────────────────────────────────────── */
 
+.topRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .greeting h1 {
   font-size: 28px;
   font-weight: 800;
@@ -40,6 +47,32 @@
   color: rgba(10, 22, 132, 0.55);
   margin-top: 4px;
   font-weight: 400;
+}
+
+.logoutBtn {
+  border: none;
+  background: rgba(255, 255, 255, 0.85);
+  color: #1a1a2e;
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  font-family: 'Nunito', sans-serif;
+}
+
+.logoutBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.14);
+}
+
+.logoutBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
 /* ── Slide indicator dots ────────────────────────────────────────────────────── */
