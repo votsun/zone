@@ -26,6 +26,8 @@ export default function TaskDetailPage() {
   const [rewardType, setRewardType] = useState<'step' | 'task'>('step')
   const [isCompletingStep, setIsCompletingStep] = useState(false)
   const [isCompletingTask, setIsCompletingTask] = useState(false)
+  const [isSkippingStep, setIsSkippingStep] = useState(false)
+  const [autoGenerateEnabled, setAutoGenerateEnabled] = useState(true)
 
   const fetchTask = useCallback(async () => {
     if (!taskId) {
@@ -90,15 +92,15 @@ export default function TaskDetailPage() {
   }, [fetchTask])
 
   useEffect(() => {
-    if (!task || isGenerating || generateError) return
+    if (!task || isGenerating || generateError || !autoGenerateEnabled) return
     const hasSteps = (task.micro_steps?.length || 0) > 0
     if (!hasSteps) {
       void generateMicroSteps()
     }
-  }, [task, isGenerating, generateError, generateMicroSteps])
+  }, [task, isGenerating, generateError, generateMicroSteps, autoGenerateEnabled])
 
   const handleCompleteStep = async (stepId: string) => {
-    if (!task || isCompletingStep || isCompletingTask) return
+    if (!task || isCompletingStep || isCompletingTask || isSkippingStep) return
 
     const previousTask = task
     const alreadyComplete = task.micro_steps?.find((step) => step.id === stepId)?.is_complete
@@ -138,8 +140,41 @@ export default function TaskDetailPage() {
     setIsCompletingStep(false)
   }
 
+  const handleSkipStep = async (stepId: string) => {
+    if (!task || isCompletingStep || isCompletingTask || isSkippingStep) return
+
+    const previousTask = task
+    const wasAutoGenerateEnabled = autoGenerateEnabled
+    const stepExists = task.micro_steps?.some((step) => step.id === stepId)
+    if (!stepExists) return
+
+    setGenerateError(null)
+    setIsSkippingStep(true)
+    setAutoGenerateEnabled(false)
+    setTask((current) => {
+      if (!current?.micro_steps) return current
+      return {
+        ...current,
+        micro_steps: current.micro_steps.filter((step) => step.id !== stepId),
+      }
+    })
+    setViewState('breakdown')
+
+    const response = await fetch(`/api/subtasks/${stepId}`, {
+      method: 'DELETE',
+    })
+
+    if (!response.ok) {
+      setTask(previousTask)
+      setAutoGenerateEnabled(wasAutoGenerateEnabled)
+      setGenerateError('Failed to skip step.')
+    }
+
+    setIsSkippingStep(false)
+  }
+
   const handleCompleteTask = async (completedTaskId: string) => {
-    if (!task || isCompletingTask || isCompletingStep) return
+    if (!task || isCompletingTask || isCompletingStep || isSkippingStep) return
 
     const previousTask = task
     setGenerateError(null)
@@ -223,8 +258,10 @@ export default function TaskDetailPage() {
           <TaskBreakdown
             task={task}
             onCompleteStep={handleCompleteStep}
+            onSkipStep={handleSkipStep}
             onCompleteTask={handleCompleteTask}
             isCompleting={isCompletingStep || isCompletingTask}
+            isSkipping={isSkippingStep}
           />
 
           {(!task.micro_steps || task.micro_steps.length === 0) && (
@@ -239,7 +276,10 @@ export default function TaskDetailPage() {
                 <Button
                   size="lg"
                   className="w-full"
-                  onClick={() => void generateMicroSteps()}
+                  onClick={() => {
+                    setAutoGenerateEnabled(true)
+                    void generateMicroSteps()
+                  }}
                 >
                   Generate Micro-Steps
                 </Button>
@@ -268,8 +308,10 @@ export default function TaskDetailPage() {
           stepNumber={stepIndex + 1}
           totalSteps={totalSteps}
           onCompleteStep={handleCompleteStep}
+          onSkipStep={handleSkipStep}
           onExitFocus={() => setViewState('breakdown')}
           isCompleting={isCompletingStep || isCompletingTask}
+          isSkipping={isSkippingStep}
         />
       )}
     </div>
