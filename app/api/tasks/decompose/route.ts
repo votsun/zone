@@ -3,6 +3,12 @@ import { NextResponse } from 'next/server'
 import { genAI } from '@/lib/gemini/client'
 import { buildDecomposePrompt } from '@/lib/gemini/prompts'
 
+type GeneratedStep = {
+  description: string
+  estimated_minutes: number
+  step_order: number
+}
+
 export async function POST(request: Request) {
   const supabase = await createClient()
 
@@ -31,9 +37,30 @@ export async function POST(request: Request) {
     const text = response.text ?? ''
 
     const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
-    const microSteps = JSON.parse(cleaned)
+    const parsed = JSON.parse(cleaned) as unknown
+    const microSteps = Array.isArray(parsed) ? (parsed as GeneratedStep[]) : []
+    const normalizedSteps =
+      microSteps.length > 0
+        ? microSteps
+        : [
+            {
+              description: `Open materials for: ${taskTitle}`,
+              estimated_minutes: 5,
+              step_order: 1,
+            },
+            {
+              description: `Work on the first small part of: ${taskTitle}`,
+              estimated_minutes: 15,
+              step_order: 2,
+            },
+            {
+              description: `Review and mark progress for: ${taskTitle}`,
+              estimated_minutes: 5,
+              step_order: 3,
+            },
+          ]
 
-    const stepsToInsert = microSteps.map((step: any) => ({
+    const stepsToInsert = normalizedSteps.map((step) => ({
       task_id: taskId,
       description: step.description,
       estimated_minutes: step.estimated_minutes,
@@ -42,7 +69,7 @@ export async function POST(request: Request) {
     }))
 
     const { data, error } = await supabase
-      .from('micro_steps')
+      .from('subtasks')
       .insert(stepsToInsert)
       .select()
 
@@ -52,8 +79,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json(data, { status: 201 })
   } catch (err) {
+    const message = err instanceof Error ? err.message : 'Unknown error'
     return NextResponse.json(
-      { error: 'Failed to decompose task. AI response could not be parsed.' },
+      { error: `Failed to decompose task. ${message}` },
       { status: 500 }
     )
   }
