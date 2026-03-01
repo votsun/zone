@@ -10,7 +10,7 @@ export function buildDecomposePrompt(
   return `
 You are an ADHD productivity assistant for an app called Zone.
 
-Break down the following task into small, actionable micro-steps.
+Break down the following task into small, actionable subtasks.
 
 Task: "${taskTitle}"
 User's current energy level: ${energyLevel}

@@ -25,7 +25,7 @@ export function TaskBreakdown({
   isSkipping = false,
 }: TaskBreakdownProps) {
   if (!task.micro_steps || task.micro_steps.length === 0) {
-    return <div>No micro-steps generated yet.</div>
+    return <div>No subtasks generated yet.</div>
   }
 
   const steps = task.micro_steps

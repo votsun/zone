@@ -57,7 +57,7 @@ export default function TaskDetailPage() {
     setLoading(false)
   }, [taskId])
 
-  const generateMicroSteps = useCallback(async () => {
+  const generateSubtasks = useCallback(async () => {
     if (!taskId || !task) return
     setGenerateError(null)
     setIsGenerating(true)
@@ -80,7 +80,7 @@ export default function TaskDetailPage() {
       await fetchTask()
     } catch (err) {
       setGenerateError(
-        err instanceof Error ? err.message : 'Failed to generate micro-steps.'
+        err instanceof Error ? err.message : 'Failed to generate subtasks.'
       )
     } finally {
       setIsGenerating(false)
@@ -95,9 +95,9 @@ export default function TaskDetailPage() {
     if (!task || isGenerating || generateError || !autoGenerateEnabled) return
     const hasSteps = (task.micro_steps?.length || 0) > 0
     if (!hasSteps) {
-      void generateMicroSteps()
+      void generateSubtasks()
     }
-  }, [task, isGenerating, generateError, generateMicroSteps, autoGenerateEnabled])
+  }, [task, isGenerating, generateError, generateSubtasks, autoGenerateEnabled])
 
   const handleCompleteStep = async (stepId: string) => {
     if (!task || isCompletingStep || isCompletingTask || isSkippingStep) return
@@ -267,7 +267,7 @@ export default function TaskDetailPage() {
           {(!task.micro_steps || task.micro_steps.length === 0) && (
             <div className="space-y-3">
               {isGenerating && (
-                <p className="text-sm text-muted-foreground">Generating micro-steps...</p>
+                <p className="text-sm text-muted-foreground">Generating subtasks...</p>
               )}
               {generateError && (
                 <p className="text-sm text-red-500">{generateError}</p>
@@ -278,10 +278,10 @@ export default function TaskDetailPage() {
                   className="w-full"
                   onClick={() => {
                     setAutoGenerateEnabled(true)
-                    void generateMicroSteps()
+                    void generateSubtasks()
                   }}
                 >
-                  Generate Micro-Steps
+                  Generate Subtasks
                 </Button>
               )}
             </div>

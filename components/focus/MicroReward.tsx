@@ -24,7 +24,7 @@ export function MicroReward({ type }: MicroRewardProps) {
         confetti({ ...defaults, particleCount, origin: { x: Math.random(), y: Math.random() - 0.2 } })
       }, 250)
     } else {
-      // Mini burst for just a micro-step
+      // Mini burst for just one subtask
       confetti({
         particleCount: 40,
         spread: 70,
