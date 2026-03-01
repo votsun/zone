@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { PersistentLogoutButton } from "@/components/auth/PersistentLogoutButton";
-import Iridescence from "@/components/layout/Iridescence";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -16,12 +15,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="font-sans antialiased">
-        <Iridescence
-          color={[1, 0.6, 0.8]}
-          mouseReact
-          amplitude={0.1}
-          speed={0.9}
-        />
         <PersistentLogoutButton />
         {children}
       </body>
