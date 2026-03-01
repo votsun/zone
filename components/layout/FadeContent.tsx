@@ -63,11 +63,12 @@ export default function FadeContent({
     const el = ref.current;
     if (!el) return;
 
-    let scrollerTarget: Element | null =
+    const rawScrollerTarget =
       container ?? document.getElementById("snap-main-container") ?? null;
-    if (typeof scrollerTarget === "string") {
-      scrollerTarget = document.querySelector(scrollerTarget);
-    }
+    const scrollerTarget: Element | null =
+      typeof rawScrollerTarget === "string"
+        ? document.querySelector(rawScrollerTarget)
+        : rawScrollerTarget;
 
     const startPct = (1 - threshold) * 100;
 
