@@ -143,7 +143,6 @@ export default function TaskDetailPage() {
   const handleSkipStep = async (stepId: string) => {
     if (!task || isCompletingStep || isCompletingTask || isSkippingStep) return
 
-    const previousTask = task
     const wasAutoGenerateEnabled = autoGenerateEnabled
     const stepExists = task.micro_steps?.some((step) => step.id === stepId)
     if (!stepExists) return
@@ -158,18 +157,23 @@ export default function TaskDetailPage() {
         micro_steps: current.micro_steps.filter((step) => step.id !== stepId),
       }
     })
+    setIsSkippingStep(false)
 
-    const response = await fetch(`/api/subtasks/${stepId}`, {
-      method: 'DELETE',
-    })
+    try {
+      const response = await fetch(`/api/subtasks/${stepId}`, {
+        method: 'DELETE',
+      })
 
-    if (!response.ok) {
-      setTask(previousTask)
+      if (response.ok) return
+
       setAutoGenerateEnabled(wasAutoGenerateEnabled)
       setGenerateError('Failed to skip step.')
+      await fetchTask()
+    } catch {
+      setAutoGenerateEnabled(wasAutoGenerateEnabled)
+      setGenerateError('Failed to skip step.')
+      await fetchTask()
     }
-
-    setIsSkippingStep(false)
   }
 
   const handleCompleteTask = async (completedTaskId: string) => {
