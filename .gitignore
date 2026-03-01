@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+echo "demo_backup/" >> .gitignore
+echo "node_modules/" >> .gitignore
