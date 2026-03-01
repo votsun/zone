@@ -1,8 +1,8 @@
 'use client'
 
 import { createClient } from '@/lib/supabase/client'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { useMemo, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
 function getCallbackUrl() {
   if (typeof window === 'undefined') return undefined
@@ -12,19 +12,22 @@ function getCallbackUrl() {
 export default function LoginPage() {
   const supabase = createClient()
   const router = useRouter()
-  const searchParams = useSearchParams()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isSignUp, setIsSignUp] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
+  const [nextPath, setNextPath] = useState('/dashboard')
 
-  const nextPath = useMemo(() => {
-    const next = searchParams.get('next')
-    if (!next || !next.startsWith('/') || next.startsWith('//')) return '/dashboard'
-    return next
-  }, [searchParams])
+  useEffect(() => {
+    const next = new URLSearchParams(window.location.search).get('next')
+    if (!next || !next.startsWith('/') || next.startsWith('//')) {
+      setNextPath('/dashboard')
+      return
+    }
+    setNextPath(next)
+  }, [])
 
   async function handleEmailAuth() {
     setLoading(true)

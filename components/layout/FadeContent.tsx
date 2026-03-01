@@ -1,10 +1,6 @@
 "use client";
 
-import { useRef, useEffect } from "react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-
-gsap.registerPlugin(ScrollTrigger);
+import { useEffect, useRef, useState } from "react";
 
 interface FadeContentProps
   extends Omit<React.HTMLAttributes<HTMLDivElement>, "onComplete"> {
@@ -15,7 +11,6 @@ interface FadeContentProps
   blur?: boolean;
   duration?: number;
   ease?: string;
-  /** Alias for ease (e.g. "ease-out" → power2.out) */
   easing?: string;
   delay?: number;
   threshold?: number;
@@ -28,13 +23,6 @@ interface FadeContentProps
   className?: string;
   style?: React.CSSProperties;
 }
-
-const normalizeEase = (e: string): string => {
-  if (e === "ease-out") return "power2.out";
-  if (e === "ease-in") return "power2.in";
-  if (e === "ease-in-out") return "power2.inOut";
-  return e;
-};
 
 const getSeconds = (val: number): number =>
   typeof val === "number" && val > 10 ? val / 1000 : val;
@@ -60,16 +48,20 @@ export default function FadeContent({
   ...props
 }: FadeContentProps) {
   const ref = useRef<HTMLDivElement>(null);
-  const ease = normalizeEase(easing ?? easeProp);
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
+    const showTimeout = window.setTimeout(() => {
+      setVisible(true);
+      onComplete?.();
+    }, getSeconds(delay) * 1000);
 
-    let scrollerTarget: Element | null =
-      container ?? document.getElementById("snap-main-container") ?? null;
-    if (typeof scrollerTarget === "string") {
-      scrollerTarget = document.querySelector(scrollerTarget);
+    let hideTimeout: number | undefined;
+    if (disappearAfter > 0) {
+      hideTimeout = window.setTimeout(() => {
+        setVisible(false);
+        onDisappearanceComplete?.();
+      }, (getSeconds(delay) + getSeconds(disappearAfter)) * 1000);
     }
 
     const startPct = (1 - threshold) * 100;
@@ -122,9 +114,8 @@ export default function FadeContent({
     });
 
     return () => {
-      st.kill();
-      tl.kill();
-      gsap.killTweensOf(el);
+      window.clearTimeout(showTimeout);
+      if (hideTimeout) window.clearTimeout(hideTimeout);
     };
   }, [
     playOnMount,
@@ -144,7 +135,17 @@ export default function FadeContent({
   ]);
 
   return (
-    <div ref={ref} className={className} style={style} {...props}>
+    <div
+      ref={ref}
+      className={className}
+      style={{
+        opacity: visible ? 1 : initialOpacity,
+        filter: blur ? (visible ? "blur(0px)" : "blur(10px)") : undefined,
+        transition: `opacity ${getSeconds(duration)}s ease, filter ${getSeconds(duration)}s ease`,
+        ...style,
+      }}
+      {...props}
+    >
       {children}
     </div>
   );

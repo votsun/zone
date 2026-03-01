@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
-import { genAI } from '@/lib/gemini/client'
+import { getGeminiClient } from '@/lib/gemini/client'
 import { buildDecomposePrompt } from '@/lib/gemini/prompts'
 
 type GeneratedStep = {
@@ -72,7 +72,15 @@ export async function POST(request: Request) {
       resolvedEnergyLevel,
       typeof taskDescription === 'string' ? taskDescription : undefined
     )
-    const response = await genAI.models.generateContent({
+    const geminiClient = getGeminiClient()
+    if (!geminiClient) {
+      return NextResponse.json(
+        { error: 'GEMINI_API_KEY is not configured.' },
+        { status: 500 }
+      )
+    }
+
+    const response = await geminiClient.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: prompt,
     })
