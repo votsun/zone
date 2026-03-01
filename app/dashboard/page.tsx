@@ -5,6 +5,7 @@ import { ChevronRight, Check, Plus } from "lucide-react";
 import styles from "./home.module.css";
 import { initialTasks, type Tasks } from "./data";
 import { createClient } from "@/lib/supabase/client";
+import Link from "next/link";
 
 export default function Page() {
   const [selectedTask, setSelectedTask] = useState<Tasks | null>(null)
@@ -178,9 +179,11 @@ export default function Page() {
         </div>
 
         {/* Add new task button */}
-        <button className={styles.fab}>
-          <Plus size={22} />
-        </button>
+        <Link href="/add_task">
+          <button className={styles.fab}>
+            <Plus size={22} />
+          </button>
+        </Link>
 
       </div>
       {/* ── Task Detail Overlay (blurred background) ─────────── */}
