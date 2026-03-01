@@ -1,7 +1,12 @@
 export function buildDecomposePrompt(
   taskTitle: string,
-  energyLevel: string = 'medium'
+  energyLevel: string = 'medium',
+  taskDescription?: string
 ): string {
+  const descriptionBlock = taskDescription
+    ? `\nAdditional context from the user:\n${taskDescription}\n`
+    : ''
+
   return `
 You are an ADHD productivity assistant for an app called Zone.
 
@@ -9,6 +14,7 @@ Break down the following task into small, actionable micro-steps.
 
 Task: "${taskTitle}"
 User's current energy level: ${energyLevel}
+${descriptionBlock}
 
 ADHD focus block durations (use these to estimate time per step):
 - Low energy: 5–10 minutes per step (task initiation, easy wins)

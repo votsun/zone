@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { taskId, energyLevel } = await request.json()
+  const { taskId, energyLevel, taskDescription } = await request.json()
 
   if (!taskId) {
     return NextResponse.json(
@@ -56,7 +56,11 @@ export async function POST(request: Request) {
 
     const taskTitle = String(task.title || 'Untitled task')
     const resolvedEnergyLevel = energyLevel || task.energy_level || 'medium'
-    const prompt = buildDecomposePrompt(taskTitle, resolvedEnergyLevel)
+    const prompt = buildDecomposePrompt(
+      taskTitle,
+      resolvedEnergyLevel,
+      typeof taskDescription === 'string' ? taskDescription : undefined
+    )
     const response = await genAI.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: prompt,

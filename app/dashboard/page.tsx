@@ -1,12 +1,12 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { ChevronRight, Check, Plus } from 'lucide-react'
+import { FormEvent, useEffect, useMemo, useRef, useState } from 'react'
+import { ChevronRight, Check, Plus, X, Upload, BatteryLow, Coffee, Zap, Send } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import styles from './home.module.css'
 import { createClient } from '@/lib/supabase/client'
 import { useTasks } from '@/hooks/useTasks'
-import { Task } from '@/types/task'
+import { EnergyLevel, Task } from '@/types/task'
 
 type Star = {
   left: string
@@ -18,9 +18,14 @@ type Star = {
 export default function Page() {
   const router = useRouter()
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null)
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [creatingTask, setCreatingTask] = useState(false)
   const [loggingOut, setLoggingOut] = useState(false)
   const [actionError, setActionError] = useState<string | null>(null)
+  const [newTaskTitle, setNewTaskTitle] = useState('')
+  const [newTaskDescription, setNewTaskDescription] = useState('')
+  const [newTaskEnergy, setNewTaskEnergy] = useState<EnergyLevel>('medium')
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [name, setName] = useState('there')
   const [slide, setSlide] = useState(0)
 
@@ -108,25 +113,57 @@ export default function Page() {
     }
   }
 
-  const handleCreateTask = async () => {
-    if (creatingTask) return
+  const resetAddTaskForm = () => {
+    setNewTaskTitle('')
+    setNewTaskDescription('')
+    setNewTaskEnergy('medium')
+    setSelectedFile(null)
+  }
 
-    const title = window.prompt('What task should we add?')
-    if (!title || !title.trim()) return
+  const openAddTaskModal = () => {
+    setActionError(null)
+    setSelectedTaskId(null)
+    setIsAddModalOpen(true)
+  }
+
+  const closeAddTaskModal = () => {
+    if (creatingTask) return
+    setIsAddModalOpen(false)
+    resetAddTaskForm()
+  }
+
+  const handleSubmitNewTask = async (e: FormEvent) => {
+    e.preventDefault()
+    if (creatingTask) return
+    if (!newTaskTitle.trim() || !newTaskDescription.trim()) return
 
     setActionError(null)
     setCreatingTask(true)
 
     try {
       const created = await createTask({
-        title: title.trim(),
+        title: newTaskTitle.trim(),
+        description: newTaskDescription.trim(),
         category: 'neutral',
         priority: 'medium',
-        energy_level: 'medium',
+        energy_level: newTaskEnergy,
       })
 
-      router.push(`/tasks/${created.id}`)
+      // Best-effort step generation; task page also has retry/auto generation.
+      await fetch('/api/tasks/decompose', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          taskId: created.id,
+          energyLevel: newTaskEnergy,
+          taskDescription: newTaskDescription.trim(),
+          fileName: selectedFile?.name || null,
+        }),
+      }).catch(() => null)
+
       setSlide(0)
+      closeAddTaskModal()
+      router.push(`/tasks/${created.id}`)
     } catch (err) {
       const message =
         err instanceof Error ? err.message : 'Failed to create task'
@@ -302,7 +339,7 @@ export default function Page() {
 
         <button
           className={styles.fab}
-          onClick={handleCreateTask}
+          onClick={openAddTaskModal}
           disabled={creatingTask}
           aria-label="Add task"
         >
@@ -386,6 +423,96 @@ export default function Page() {
                 ✓ Mark Complete
               </button>
             </div>
+          </div>
+        </>
+      )}
+
+      {isAddModalOpen && (
+        <>
+          <div className={styles.addBackdrop} onClick={closeAddTaskModal} />
+          <div className={styles.addModal}>
+            <div className={styles.addModalHeader}>
+              <h2>New Task</h2>
+              <button
+                type="button"
+                className={styles.addCloseBtn}
+                onClick={closeAddTaskModal}
+                aria-label="Close add task modal"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <form className={styles.addForm} onSubmit={handleSubmitNewTask}>
+              <div className={styles.addInnerCard}>
+                <h3>What&apos;s on your mind?</h3>
+
+                <label htmlFor="new-task-title">Task Name</label>
+                <input
+                  id="new-task-title"
+                  type="text"
+                  required
+                  value={newTaskTitle}
+                  onChange={(event) => setNewTaskTitle(event.target.value)}
+                  placeholder="e.g., Study for Chem Midterm"
+                />
+
+                <label htmlFor="new-task-description">Quick Description</label>
+                <textarea
+                  id="new-task-description"
+                  required
+                  value={newTaskDescription}
+                  onChange={(event) => setNewTaskDescription(event.target.value)}
+                  placeholder="Paste the syllabus requirements or just vent about what needs to be done..."
+                />
+
+                <label className={styles.uploadZone}>
+                  <input
+                    type="file"
+                    accept=".pdf,.txt,.doc,.docx"
+                    onChange={(event) => setSelectedFile(event.target.files?.[0] || null)}
+                  />
+                  <Upload className={styles.uploadIcon} size={30} />
+                  <p>{selectedFile?.name || 'Drop a PDF or homework file here'}</p>
+                  <span>Optional - we&apos;ll use this to break down tasks</span>
+                </label>
+
+                <div className={styles.energyWrap}>
+                  <h4>How much energy do you have?</h4>
+                  <div className={styles.energyOptions}>
+                    <button
+                      type="button"
+                      className={`${styles.energyBtn} ${newTaskEnergy === 'low' ? styles.energyBtnActiveLow : ''}`}
+                      onClick={() => setNewTaskEnergy('low')}
+                    >
+                      <BatteryLow size={18} />
+                      Low
+                    </button>
+                    <button
+                      type="button"
+                      className={`${styles.energyBtn} ${newTaskEnergy === 'medium' ? styles.energyBtnActiveMedium : ''}`}
+                      onClick={() => setNewTaskEnergy('medium')}
+                    >
+                      <Coffee size={18} />
+                      Medium
+                    </button>
+                    <button
+                      type="button"
+                      className={`${styles.energyBtn} ${newTaskEnergy === 'high' ? styles.energyBtnActiveHigh : ''}`}
+                      onClick={() => setNewTaskEnergy('high')}
+                    >
+                      <Zap size={18} />
+                      High
+                    </button>
+                  </div>
+                </div>
+
+                <button type="submit" className={styles.addSubmitBtn} disabled={creatingTask}>
+                  {creatingTask ? 'Creating...' : 'Let\'s Go'}
+                  <Send size={18} />
+                </button>
+              </div>
+            </form>
           </div>
         </>
       )}
