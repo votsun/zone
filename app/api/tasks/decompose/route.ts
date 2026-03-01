@@ -9,6 +9,17 @@ type GeneratedStep = {
   step_order: number
 }
 
+function getFallbackMinutes(energyLevel: string) {
+  switch (energyLevel) {
+    case 'low':
+      return { setup: 2, work: 7, review: 3 }
+    case 'high':
+      return { setup: 2, work: 25, review: 4 }
+    default:
+      return { setup: 2, work: 12, review: 3 }
+  }
+}
+
 export async function POST(request: Request) {
   const supabase = await createClient()
 
@@ -70,23 +81,24 @@ export async function POST(request: Request) {
     const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
     const parsed = JSON.parse(cleaned) as unknown
     const microSteps = Array.isArray(parsed) ? (parsed as GeneratedStep[]) : []
+    const fallbackMinutes = getFallbackMinutes(resolvedEnergyLevel)
     const normalizedSteps =
       microSteps.length > 0
         ? microSteps
         : [
             {
               description: `Open materials for: ${taskTitle}`,
-              estimated_minutes: 5,
+              estimated_minutes: fallbackMinutes.setup,
               step_order: 1,
             },
             {
               description: `Work on the first small part of: ${taskTitle}`,
-              estimated_minutes: 15,
+              estimated_minutes: fallbackMinutes.work,
               step_order: 2,
             },
             {
               description: `Review and mark progress for: ${taskTitle}`,
-              estimated_minutes: 5,
+              estimated_minutes: fallbackMinutes.review,
               step_order: 3,
             },
           ]

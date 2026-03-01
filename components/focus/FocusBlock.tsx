@@ -13,8 +13,10 @@ interface FocusBlockProps {
   stepNumber: number
   totalSteps: number
   onCompleteStep: (id: string) => void
+  onSkipStep: (id: string) => void
   onExitFocus: () => void
   isCompleting?: boolean
+  isSkipping?: boolean
 }
 
 export function FocusBlock({ 
@@ -23,8 +25,10 @@ export function FocusBlock({
   stepNumber, 
   totalSteps, 
   onCompleteStep,
+  onSkipStep,
   onExitFocus,
   isCompleting = false,
+  isSkipping = false,
 }: FocusBlockProps) {
   return (
     <div className="flex flex-col gap-8 w-full max-w-2xl mx-auto py-10 px-4 animate-in fade-in duration-500">
@@ -46,7 +50,9 @@ export function FocusBlock({
           stepNumber={stepNumber} 
           totalSteps={totalSteps} 
           onComplete={onCompleteStep}
+          onSkip={onSkipStep}
           isCompleting={isCompleting}
+          isSkipping={isSkipping}
         />
       </div>
 
@@ -54,7 +60,7 @@ export function FocusBlock({
       <VisualTimer 
         minutes={currentStep.estimated_minutes} 
         onComplete={() => {
-          if (!isCompleting) {
+          if (!isCompleting && !isSkipping) {
             onCompleteStep(currentStep.id)
           }
         }}

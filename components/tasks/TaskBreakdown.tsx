@@ -5,20 +5,24 @@ import { Task } from '@/types/task'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
-import { CheckCircle, Trophy } from 'lucide-react'
+import { CheckCircle, SkipForward, Trophy } from 'lucide-react'
 
 interface TaskBreakdownProps {
   task: Task
   onCompleteStep: (stepId: string) => void
+  onSkipStep: (stepId: string) => void
   onCompleteTask: (taskId: string) => void
   isCompleting?: boolean
+  isSkipping?: boolean
 }
 
 export function TaskBreakdown({
   task,
   onCompleteStep,
+  onSkipStep,
   onCompleteTask,
   isCompleting = false,
+  isSkipping = false,
 }: TaskBreakdownProps) {
   if (!task.micro_steps || task.micro_steps.length === 0) {
     return <div>No micro-steps generated yet.</div>
@@ -44,6 +48,10 @@ export function TaskBreakdown({
       // If it was the last step, complete the whole task
       onCompleteTask(task.id)
     }
+  }
+
+  const handleSkipCurrent = () => {
+    onSkipStep(currentStep.id)
   }
 
   return (
@@ -82,15 +90,25 @@ export function TaskBreakdown({
               ⏱️ ~{currentStep.estimated_minutes} min block
             </div>
           </CardContent>
-          <CardFooter>
+          <CardFooter className="flex w-full gap-2">
             <Button 
               size="lg" 
-              className="w-full text-lg h-14" 
+              className="h-14 min-w-0 flex-1 text-lg"
               onClick={handleCompleteCurrent}
-              disabled={isCompleting}
+              disabled={isCompleting || isSkipping}
             >
               <CheckCircle className="mr-2 h-5 w-5" />
               {isCompleting ? 'Saving...' : "Done, what's next?"}
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              className="h-14 shrink-0 px-4"
+              onClick={handleSkipCurrent}
+              disabled={isCompleting || isSkipping}
+            >
+              <SkipForward className="mr-2 h-5 w-5" />
+              {isSkipping ? 'Skipping...' : 'Skip'}
             </Button>
           </CardFooter>
         </Card>
