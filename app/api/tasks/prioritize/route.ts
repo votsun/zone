@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
-import { getGeminiClient } from '@/lib/gemini/client'
+import { genAI } from '@/lib/gemini/client'
 import { buildPriorityPrompt } from '@/lib/gemini/prompts'
 
 type PriorityInputStep = {
@@ -55,15 +55,7 @@ export async function POST(request: Request) {
     })
 
     const prompt = buildPriorityPrompt(taskSummaries)
-    const geminiClient = getGeminiClient()
-    if (!geminiClient) {
-      return NextResponse.json(
-        { error: 'GEMINI_API_KEY is not configured.' },
-        { status: 500 }
-      )
-    }
-
-    const response = await geminiClient.models.generateContent({
+    const response = await genAI.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: prompt,
     })

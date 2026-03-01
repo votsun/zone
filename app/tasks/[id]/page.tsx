@@ -143,6 +143,7 @@ export default function TaskDetailPage() {
   const handleSkipStep = async (stepId: string) => {
     if (!task || isCompletingStep || isCompletingTask || isSkippingStep) return
 
+    const previousTask = task
     const wasAutoGenerateEnabled = autoGenerateEnabled
     const stepExists = task.micro_steps?.some((step) => step.id === stepId)
     if (!stepExists) return
@@ -157,23 +158,18 @@ export default function TaskDetailPage() {
         micro_steps: current.micro_steps.filter((step) => step.id !== stepId),
       }
     })
-    setIsSkippingStep(false)
 
-    try {
-      const response = await fetch(`/api/subtasks/${stepId}`, {
-        method: 'DELETE',
-      })
+    const response = await fetch(`/api/subtasks/${stepId}`, {
+      method: 'DELETE',
+    })
 
-      if (response.ok) return
-
+    if (!response.ok) {
+      setTask(previousTask)
       setAutoGenerateEnabled(wasAutoGenerateEnabled)
       setGenerateError('Failed to skip step.')
-      await fetchTask()
-    } catch {
-      setAutoGenerateEnabled(wasAutoGenerateEnabled)
-      setGenerateError('Failed to skip step.')
-      await fetchTask()
     }
+
+    setIsSkippingStep(false)
   }
 
   const handleCompleteTask = async (completedTaskId: string) => {
@@ -242,12 +238,12 @@ export default function TaskDetailPage() {
       {/* Breakdown View — List of steps + progress */}
       {viewState === 'breakdown' && (
         <div className="p-4 space-y-4 max-w-md mx-auto">
-          <div className="flex items-center justify-start pt-2">
+          <div className="flex items-center gap-2 pt-4">
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
               onClick={() => router.push('/dashboard')}
-              className="gap-1 rounded-full"
+              className="gap-1"
             >
               <ArrowLeft className="h-4 w-4" />
               Dashboard

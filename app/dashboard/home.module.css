@@ -23,29 +23,18 @@
 
 /* ── Greeting ────────────────────────────────────────────────────────────────── */
 
-.greeting {
-  color: #1f2937;
-  text-align: left;
-}
-
-.greetingTitle {
+.greeting h1 {
   font-size: 33px;
   font-weight: 800;
-  color: #1f2937;
-  -webkit-text-fill-color: #1f2937;
+  color: #fff;
   letter-spacing: -0.3px;
-  line-height: 1.1;
-  margin: 0;
-  opacity: 1;
 }
 
-.greetingSubtitle {
+.greeting p {
   font-size: 15px;
-  color: rgba(31, 41, 55, 0.78);
-  -webkit-text-fill-color: rgba(31, 41, 55, 0.78);
-  margin: 4px 0 0;
+  color: rgba(255, 255, 255, 0.9);
+  margin-top: 4px;
   font-weight: 400;
-  opacity: 1;
 }
 
 /* ── Slide indicator dots ────────────────────────────────────────────────────── */
@@ -60,7 +49,7 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: rgba(31, 41, 55, 0.25);
+  background: rgba(255, 255, 255, 0.25);
   border: none;
   cursor: pointer;
   padding: 0;
@@ -68,7 +57,7 @@
 }
 
 .dotActive {
-  background: #1f2937;
+  background: white;
   width: 20px;           /* active dot stretches into a pill shape */
   border-radius: 3px;
 }
@@ -113,12 +102,12 @@
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #334155;
+  color: #fff;
 }
 
 .slideCount {
   font-size: 12px;
-  color: rgba(51, 65, 85, 0.8);
+  color: rgba(255, 255, 255, 0.9);
   font-weight: 500;
 }
 
@@ -247,7 +236,7 @@
   text-align: center;
   padding: 32px 0;
   font-size: 15px;
-  color: #334155;
+  color: #fff;
   font-weight: 500;
 }
 
