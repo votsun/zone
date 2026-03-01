@@ -1,14 +1,9 @@
-/* ── Fonts ───────────────────────────────────────────────────────────────────── */
-
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800&display=swap');
-
 /* ── Page ────────────────────────────────────────────────────────────────────── */
 
 .page {
   min-height: 100vh;
   width: 100%;
-  background: radial-gradient(circle at center, rgb(255, 224, 178), rgb(255, 138, 101));
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--font-playfair), ui-serif, serif;
   position: relative;
   overflow: hidden;
 }
@@ -29,15 +24,15 @@
 /* ── Greeting ────────────────────────────────────────────────────────────────── */
 
 .greeting h1 {
-  font-size: 28px;
+  font-size: 33px;
   font-weight: 800;
-  color: black;
+  color: #fff;
   letter-spacing: -0.3px;
 }
 
 .greeting p {
   font-size: 15px;
-  color: rgba(10, 22, 132, 0.55);
+  color: rgba(255, 255, 255, 0.9);
   margin-top: 4px;
   font-weight: 400;
 }
@@ -107,12 +102,12 @@
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.5);
+  color: #fff;
 }
 
 .slideCount {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.35);
+  color: rgba(255, 255, 255, 0.9);
   font-weight: 500;
 }
 
@@ -204,6 +199,23 @@
   font-weight: 500;
 }
 
+/* Override when inside Magic Bento card (cream background) */
+:global(.magic-bento-card) .taskTitle {
+  color: #3d3529;
+}
+
+:global(.magic-bento-card) .taskMeta {
+  color: rgba(61, 53, 41, 0.85);
+}
+
+:global(.magic-bento-card) .taskDuration {
+  color: rgba(61, 53, 41, 0.7);
+}
+
+:global(.magic-bento-card) .taskCardRight {
+  color: rgba(61, 53, 41, 0.75);
+}
+
 .checkIcon {
   color: #09672b; /* green tick on completed cards */
 }
@@ -224,7 +236,7 @@
   text-align: center;
   padding: 32px 0;
   font-size: 15px;
-  color: rgba(255, 255, 255, 0.4);
+  color: #fff;
   font-weight: 500;
 }
 

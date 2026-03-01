@@ -7,6 +7,8 @@ import styles from './home.module.css'
 import { createClient } from '@/lib/supabase/client'
 import { useTasks } from '@/hooks/useTasks'
 import { EnergyLevel, Task } from '@/types/task'
+import MagicBento, { ParticleCard } from '@/components/layout/MagicBento'
+import FadeContent from '@/components/layout/FadeContent'
 
 type Star = {
   left: string
@@ -191,12 +193,25 @@ export default function Page() {
       </div>
 
       <div className={styles.content}>
-        <div className={styles.greeting}>
-          <h1>Hi, {name} 👋</h1>
-          <p>Today&apos;s Focus</p>
-        </div>
+        <FadeContent
+          blur={true}
+          duration={1000}
+          easing="ease-out"
+          initialOpacity={0}
+        >
+          <div className={styles.greeting}>
+            <h1>Hi, {name} 👋</h1>
+            <p>Today&apos;s Focus</p>
+          </div>
+        </FadeContent>
 
-        <div className={styles.dots}>
+        <FadeContent
+          blur={true}
+          duration={1000}
+          delay={750}
+          initialOpacity={0}
+        >
+          <div className={styles.dots}>
           <button
             className={`${styles.dot} ${slide === 0 ? styles.dotActive : ''}`}
             onClick={() => goToSlide(0)}
@@ -238,39 +253,73 @@ export default function Page() {
                 <div className={styles.emptyState}>{actionError}</div>
               )}
 
-              {activeTasks.map((task) => {
-                const totalMinutes = getTotalMinutes(task)
-                const remainingSteps = getRemainingSteps(task)
-                const hasSteps = (task.micro_steps?.length ?? 0) > 0
+              {activeTasks.length > 0 && (
+                <MagicBento
+                  textAutoHide={true}
+                  enableStars
+                  enableSpotlight
+                  enableBorderGlow={true}
+                  enableTilt={false}
+                  enableMagnetism={false}
+                  clickEffect
+                  spotlightRadius={400}
+                  particleCount={12}
+                  glowColor="212, 196, 176"
+                  disableAnimations={false}
+                  singleColumn
+                >
+                  {activeTasks.map((task) => {
+                  const totalMinutes = getTotalMinutes(task)
+                  const remainingSteps = getRemainingSteps(task)
+                  const hasSteps = (task.micro_steps?.length ?? 0) > 0
 
-                return (
-                  <div
-                    key={task.id}
-                    className={`${styles.taskCard} ${styles.taskCardFeatured}`}
-                    onClick={() => setSelectedTaskId(task.id)}
-                  >
-                    <div className={styles.taskCardLeft}>
-                      <span className={styles.taskTitle}>{task.title}</span>
-                      <span className={styles.taskMeta}>
-                        {hasSteps
-                          ? `${remainingSteps} subtasks left`
-                          : totalMinutes > 0
-                          ? `${totalMinutes} min total`
-                          : 'Tap to open'}
-                      </span>
-                    </div>
+                  return (
+                    <ParticleCard
+                      key={task.id}
+                      particleCount={12}
+                      glowColor="212, 196, 176"
+                      enableTilt={false}
+                      enableMagnetism={false}
+                      clickEffect
+                      disableAnimations={false}
+                    >
+                      <div
+                        className="magic-bento-card magic-bento-card--border-glow magic-bento-card--task"
+                        onClick={() => setSelectedTaskId(task.id)}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault()
+                            setSelectedTaskId(task.id)
+                          }
+                        }}
+                      >
+                        <div className={styles.taskCardLeft}>
+                          <span className={styles.taskTitle}>{task.title}</span>
+                          <span className={styles.taskMeta}>
+                            {hasSteps
+                              ? `${remainingSteps} subtasks left`
+                              : totalMinutes > 0
+                              ? `${totalMinutes} min total`
+                              : 'Tap to open'}
+                          </span>
+                        </div>
 
-                    <div className={styles.taskCardRight}>
-                      {totalMinutes > 0 && (
-                        <span className={styles.taskDuration}>
-                          {totalMinutes} min
-                        </span>
-                      )}
-                      <ChevronRight size={14} />
-                    </div>
-                  </div>
-                )
-              })}
+                        <div className={styles.taskCardRight}>
+                          {totalMinutes > 0 && (
+                            <span className={styles.taskDuration}>
+                              {totalMinutes} min
+                            </span>
+                          )}
+                          <ChevronRight size={14} />
+                        </div>
+                      </div>
+                    </ParticleCard>
+                  )
+                })}
+                </MagicBento>
+              )}
             </div>
           </div>
 
@@ -304,6 +353,7 @@ export default function Page() {
             </div>
           </div>
         </div>
+        </FadeContent>
 
         <button
           className={styles.fab}
