@@ -10,13 +10,6 @@ import { EnergyLevel, Task } from '@/types/task'
 import MagicBento, { ParticleCard } from '@/components/layout/MagicBento'
 import FadeContent from '@/components/layout/FadeContent'
 
-type Star = {
-  left: string
-  top: string
-  animationDelay: string
-  opacity: number
-}
-
 export default function Page() {
   const router = useRouter()
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null)
@@ -31,15 +24,6 @@ export default function Page() {
   const [slide, setSlide] = useState(0)
 
   const sliderRef = useRef<HTMLDivElement>(null)
-
-  const stars = useRef<Star[]>(
-    Array.from({ length: 60 }).map(() => ({
-      left: `${Math.random() * 100}%`,
-      top: `${Math.random() * 100}%`,
-      animationDelay: `${Math.random() * 4}s`,
-      opacity: Math.random() * 0.6 + 0.2,
-    }))
-  ).current
 
   const { tasks, isLoading, error, createTask, updateTask } = useTasks()
 
@@ -177,33 +161,21 @@ export default function Page() {
 
   return (
     <div className={styles.page}>
-      <div className={styles.starfield} aria-hidden>
-        {stars.map((star, i) => (
-          <div
-            key={i}
-            className={styles.star}
-            style={{
-              left: star.left,
-              top: star.top,
-              animationDelay: star.animationDelay,
-              opacity: star.opacity,
-            }}
-          />
-        ))}
-      </div>
-
       <div className={styles.content}>
-        <FadeContent
-          blur={true}
-          duration={1000}
-          easing="ease-out"
-          initialOpacity={0}
-        >
-          <div className={styles.greeting}>
-            <h1>Hi, {name} 👋</h1>
-            <p>Today&apos;s Focus</p>
+        <div className={styles.greeting}>
+          <div
+            className={styles.greetingTitle}
+            style={{ color: '#1f2937', WebkitTextFillColor: '#1f2937' }}
+          >
+            Hi, {name || 'there'} 👋
           </div>
-        </FadeContent>
+          <div
+            className={styles.greetingSubtitle}
+            style={{ color: 'rgba(31, 41, 55, 0.78)', WebkitTextFillColor: 'rgba(31, 41, 55, 0.78)' }}
+          >
+            Today&apos;s Focus
+          </div>
+        </div>
 
         <FadeContent
           blur={true}
