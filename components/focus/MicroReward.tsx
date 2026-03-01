@@ -16,7 +16,7 @@ export function MicroReward({ type }: MicroRewardProps) {
       const animationEnd = Date.now() + duration
       const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 }
 
-      const interval: any = setInterval(function() {
+      const interval: ReturnType<typeof setInterval> = setInterval(function() {
         const timeLeft = animationEnd - Date.now()
         if (timeLeft <= 0) return clearInterval(interval)
 
@@ -43,7 +43,7 @@ export function MicroReward({ type }: MicroRewardProps) {
       <h3 className="text-2xl font-bold text-center">
         {type === 'task' ? 'Incredible Job!' : 'Step Completed!'}
       </h3>
-      <p className="text-muted-foreground">You're building momentum.</p>
+      <p className="text-muted-foreground">You&apos;re building momentum.</p>
     </div>
   )
 }

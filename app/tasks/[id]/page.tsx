@@ -2,7 +2,6 @@
 
 import React, { useCallback, useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 import { Task } from '@/types/task'
 import { TaskBreakdown } from '@/components/tasks/TaskBreakdown'
 import { FocusBlock } from '@/components/focus/FocusBlock'
@@ -15,7 +14,6 @@ type ViewState = 'breakdown' | 'focus' | 'reward'
 export default function TaskDetailPage() {
   const params = useParams()
   const router = useRouter()
-  const supabase = createClient()
   const taskIdParam = params.id
   const taskId = Array.isArray(taskIdParam) ? taskIdParam[0] : taskIdParam
 
@@ -26,6 +24,8 @@ export default function TaskDetailPage() {
   const [generateError, setGenerateError] = useState<string | null>(null)
   const [viewState, setViewState] = useState<ViewState>('breakdown')
   const [rewardType, setRewardType] = useState<'step' | 'task'>('step')
+  const [isCompletingStep, setIsCompletingStep] = useState(false)
+  const [isCompletingTask, setIsCompletingTask] = useState(false)
 
   const fetchTask = useCallback(async () => {
     if (!taskId) {
@@ -66,7 +66,6 @@ export default function TaskDetailPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           taskId,
-          taskTitle: task.title,
           energyLevel: task.energy_level || 'medium',
         }),
       })
@@ -99,34 +98,74 @@ export default function TaskDetailPage() {
   }, [task, isGenerating, generateError, generateMicroSteps])
 
   const handleCompleteStep = async (stepId: string) => {
-    await supabase
-      .from('subtasks')
-      .update({ is_complete: true })
-      .eq('id', stepId)
+    if (!task || isCompletingStep || isCompletingTask) return
 
+    const previousTask = task
+    const alreadyComplete = task.micro_steps?.find((step) => step.id === stepId)?.is_complete
+    if (alreadyComplete) return
+
+    setGenerateError(null)
+    setIsCompletingStep(true)
+    setTask((current) => {
+      if (!current?.micro_steps) return current
+      return {
+        ...current,
+        micro_steps: current.micro_steps.map((step) =>
+          step.id === stepId ? { ...step, is_complete: true } : step
+        ),
+      }
+    })
     setRewardType('step')
     setViewState('reward')
 
-    // After reward show, refresh task and go back to breakdown
-    setTimeout(async () => {
-      await fetchTask()
+    const response = await fetch(`/api/subtasks/${stepId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ is_complete: true }),
+    })
+    if (!response.ok) {
+      setTask(previousTask)
+      setGenerateError('Failed to mark step complete.')
+      setViewState('breakdown')
+      setIsCompletingStep(false)
+      return
+    }
+
+    // After reward show, go back to breakdown
+    setTimeout(() => {
       setViewState('breakdown')
     }, 2000)
+    setIsCompletingStep(false)
   }
 
-  const handleCompleteTask = async (taskId: string) => {
-    await supabase
-      .from('tasks')
-      .update({ is_complete: true })
-      .eq('id', taskId)
+  const handleCompleteTask = async (completedTaskId: string) => {
+    if (!task || isCompletingTask || isCompletingStep) return
 
+    const previousTask = task
+    setGenerateError(null)
+    setIsCompletingTask(true)
+    setTask((current) => (current ? { ...current, is_complete: true } : current))
     setRewardType('task')
     setViewState('reward')
+
+    const response = await fetch(`/api/tasks/${completedTaskId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ is_complete: true }),
+    })
+    if (!response.ok) {
+      setTask(previousTask)
+      setGenerateError('Failed to mark task complete.')
+      setViewState('breakdown')
+      setIsCompletingTask(false)
+      return
+    }
 
     // After big celebration, go back to dashboard
     setTimeout(() => {
       router.push('/dashboard')
     }, 4000)
+    setIsCompletingTask(false)
   }
 
   // Loading state
@@ -185,6 +224,7 @@ export default function TaskDetailPage() {
             task={task}
             onCompleteStep={handleCompleteStep}
             onCompleteTask={handleCompleteTask}
+            isCompleting={isCompletingStep || isCompletingTask}
           />
 
           {(!task.micro_steps || task.micro_steps.length === 0) && (
@@ -229,6 +269,7 @@ export default function TaskDetailPage() {
           totalSteps={totalSteps}
           onCompleteStep={handleCompleteStep}
           onExitFocus={() => setViewState('breakdown')}
+          isCompleting={isCompletingStep || isCompletingTask}
         />
       )}
     </div>

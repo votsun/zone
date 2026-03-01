@@ -11,9 +11,16 @@ interface MicroStepCardProps {
   stepNumber: number
   totalSteps: number
   onComplete: (stepId: string) => void
+  isCompleting?: boolean
 }
 
-export function MicroStepCard({ step, stepNumber, totalSteps, onComplete }: MicroStepCardProps) {
+export function MicroStepCard({
+  step,
+  stepNumber,
+  totalSteps,
+  onComplete,
+  isCompleting = false,
+}: MicroStepCardProps) {
   return (
     <Card className="shadow-lg border-2 border-primary/10 w-full animate-in slide-in-from-right-4 duration-300">
       <CardHeader>
@@ -36,9 +43,10 @@ export function MicroStepCard({ step, stepNumber, totalSteps, onComplete }: Micr
           size="lg" 
           className="w-full text-lg h-14 transition-all hover:scale-[1.02] active:scale-[0.98]" 
           onClick={() => onComplete(step.id)}
+          disabled={isCompleting}
         >
           <CheckCircle className="mr-2 h-5 w-5" />
-          Done, what's next?
+          {isCompleting ? 'Saving...' : "Done, what's next?"}
         </Button>
       </CardFooter>
     </Card>

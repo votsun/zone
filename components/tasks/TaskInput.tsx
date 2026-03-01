@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { CreateTaskInput, EnergyLevel, TaskCategory } from '@/types/task'
+import { CreateTaskInput, EnergyLevel } from '@/types/task'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -35,7 +35,7 @@ export function TaskInput({ onSubmit, isLoading }: TaskInputProps) {
   return (
     <Card className="w-full max-w-2xl mx-auto border-2 shadow-xl">
       <CardHeader>
-        <CardTitle className="text-2xl font-bold">What's on your mind?</CardTitle>
+        <CardTitle className="text-2xl font-bold">What&apos;s on your mind?</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -76,7 +76,7 @@ export function TaskInput({ onSubmit, isLoading }: TaskInputProps) {
             <p className="text-sm font-medium">
               {file ? file.name : "Drop a PDF or homework file here"}
             </p>
-            <p className="text-xs text-muted-foreground mt-1">Optional - we'll use this to break down tasks</p>
+            <p className="text-xs text-muted-foreground mt-1">Optional - we&apos;ll use this to break down tasks</p>
           </div>
 
           {/* Energy Level Selection */}
@@ -116,7 +116,7 @@ export function TaskInput({ onSubmit, isLoading }: TaskInputProps) {
           <Button type="submit" className="w-full h-14 text-xl gap-2" disabled={isLoading}>
             {isLoading ? "Breaking it down..." : (
               <>
-                Let's Go <Send className="h-5 w-5" />
+                Let&apos;s Go <Send className="h-5 w-5" />
               </>
             )}
           </Button>

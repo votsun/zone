@@ -89,6 +89,7 @@ export async function POST(request: Request) {
     {
       user_id: user.id,
       title,
+      description: typeof body.description === 'string' ? body.description : null,
       priority: body.priority || 'medium',
       energy_level: body.energy_level || 'medium',
       deadline: body.deadline || null,
@@ -97,6 +98,7 @@ export async function POST(request: Request) {
     {
       user_id: user.id,
       title,
+      description: typeof body.description === 'string' ? body.description : null,
       priority: body.priority || 'medium',
       energy_level: body.energy_level || 'medium',
     },

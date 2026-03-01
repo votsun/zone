@@ -1,28 +1,32 @@
 'use client'
 
-import React, { useState } from 'react'
-import { Task, MicroStep } from '@/types/task' // Adjust path to where your types are stored
+import React from 'react'
+import { Task } from '@/types/task'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
-import { CheckCircle, ChevronRight, Trophy } from 'lucide-react'
+import { CheckCircle, Trophy } from 'lucide-react'
 
 interface TaskBreakdownProps {
   task: Task
   onCompleteStep: (stepId: string) => void
   onCompleteTask: (taskId: string) => void
+  isCompleting?: boolean
 }
 
-export function TaskBreakdown({ task, onCompleteStep, onCompleteTask }: TaskBreakdownProps) {
-  // Find the first incomplete step to start, or default to 0
-  const initialStep = task.micro_steps?.findIndex(step => !step.is_complete) ?? 0
-  const [currentIndex, setCurrentIndex] = useState(initialStep === -1 ? 0 : initialStep)
-
+export function TaskBreakdown({
+  task,
+  onCompleteStep,
+  onCompleteTask,
+  isCompleting = false,
+}: TaskBreakdownProps) {
   if (!task.micro_steps || task.micro_steps.length === 0) {
     return <div>No micro-steps generated yet.</div>
   }
 
   const steps = task.micro_steps
+  const firstIncomplete = steps.findIndex((step) => !step.is_complete)
+  const currentIndex = firstIncomplete === -1 ? 0 : firstIncomplete
   const currentStep = steps[currentIndex]
   const completedCount = steps.filter(s => s.is_complete).length
   const totalSteps = steps.length
@@ -35,10 +39,8 @@ export function TaskBreakdown({ task, onCompleteStep, onCompleteTask }: TaskBrea
     // 1. Trigger the callback to update your DB
     onCompleteStep(currentStep.id)
     
-    // 2. Move to the next step if available
-    if (currentIndex < totalSteps - 1) {
-      setCurrentIndex(prev => prev + 1)
-    } else {
+    // 2. If it was the last step, complete the whole task
+    if (currentIndex === totalSteps - 1) {
       // If it was the last step, complete the whole task
       onCompleteTask(task.id)
     }
@@ -60,7 +62,7 @@ export function TaskBreakdown({ task, onCompleteStep, onCompleteTask }: TaskBrea
           <CardContent className="pt-6 space-y-4 flex flex-col items-center">
             <Trophy className="w-16 h-16 text-yellow-500" />
             <h3 className="text-xl font-bold">You did it!</h3>
-            <p className="text-muted-foreground">Task "{task.title}" is complete.</p>
+            <p className="text-muted-foreground">Task &quot;{task.title}&quot; is complete.</p>
           </CardContent>
         </Card>
       ) : (
@@ -85,9 +87,10 @@ export function TaskBreakdown({ task, onCompleteStep, onCompleteTask }: TaskBrea
               size="lg" 
               className="w-full text-lg h-14" 
               onClick={handleCompleteCurrent}
+              disabled={isCompleting}
             >
               <CheckCircle className="mr-2 h-5 w-5" />
-              Done, what's next?
+              {isCompleting ? 'Saving...' : "Done, what's next?"}
             </Button>
           </CardFooter>
         </Card>

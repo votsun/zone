@@ -70,6 +70,21 @@ export function useTasks(): UseTasksResult {
   }, [])
 
   const updateTask = useCallback(async (id: string, input: UpdateTaskInput) => {
+    let previousTask: Task | undefined
+    setTasks((prev) => {
+      previousTask = prev.find((task) => task.id === id)
+      if (!previousTask) return prev
+
+      return prev.map((task) =>
+        task.id === id
+          ? {
+              ...task,
+              ...input,
+            }
+          : task
+      )
+    })
+
     try {
       const response = await fetch(`/api/tasks/${id}`, {
         method: 'PATCH',
@@ -81,9 +96,24 @@ export function useTasks(): UseTasksResult {
       }
       const updated = (await response.json()) as Task
       setError(null)
-      setTasks((prev) => prev.map((task) => (task.id === id ? updated : task)))
+      setTasks((prev) =>
+        prev.map((task) =>
+          task.id === id
+            ? {
+                ...task,
+                ...updated,
+                micro_steps: updated.micro_steps ?? task.micro_steps,
+              }
+            : task
+        )
+      )
       return updated
     } catch (err) {
+      if (previousTask) {
+        setTasks((prev) =>
+          prev.map((task) => (task.id === id ? previousTask! : task))
+        )
+      }
       const message = err instanceof Error ? err.message : 'Failed to update task'
       setError(message)
       throw err
@@ -91,14 +121,22 @@ export function useTasks(): UseTasksResult {
   }, [])
 
   const deleteTask = useCallback(async (id: string) => {
+    let previousTasks: Task[] | null = null
+    setTasks((prev) => {
+      previousTasks = prev
+      return prev.filter((task) => task.id !== id)
+    })
+
     try {
       const response = await fetch(`/api/tasks/${id}`, { method: 'DELETE' })
       if (!response.ok) {
         throw new Error(await readError(response))
       }
       setError(null)
-      setTasks((prev) => prev.filter((task) => task.id !== id))
     } catch (err) {
+      if (previousTasks) {
+        setTasks(previousTasks)
+      }
       const message = err instanceof Error ? err.message : 'Failed to delete task'
       setError(message)
       throw err
