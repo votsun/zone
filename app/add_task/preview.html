@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Add Task Preview</title>
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: radial-gradient(circle at top, #3b0a57, #1f002e);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+  
+    .add-task-card {
+      background: #f4f4f4;
+      border-radius: 28px;
+      padding: 36px;
+      width: 420px;              /* BIGGER CARD */
+      box-shadow:
+        0 24px 60px rgba(0, 0, 0, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.7);
+    }
+  
+    .task-title {
+      margin: 0 0 28px 0;        /* TITLE HIGHER ABOVE UPLOAD */
+      font-weight: 700;
+      font-size: 24px;
+      text-align: center;
+    }
+  
+    .upload-box {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border: 2px dashed #d2d2d2;
+      border-radius: 18px;
+      padding: 22px;
+      margin-bottom: 20px;
+      color: #ff6b6b;
+      font-weight: 600;
+      background: #fafafa;
+    }
+  
+    textarea {
+      display: block;            /* FORCE CENTERING */
+      margin: 0 auto 26px auto;  /* CENTER TEXTAREA */
+      width: 100%;
+      height: 90px;
+      border-radius: 18px;
+      border: 1px solid #d0d0d0;
+      padding: 14px 16px;
+      font-size: 15px;
+      resize: none;
+      background: #fff;
+      outline: none;
+      box-sizing: border-box;    /* FIX ALIGNMENT BUG */
+    }
+  
+    textarea::placeholder {
+      color: #aaa;
+    }
+  
+    textarea:focus {
+      border-color: #ff6b6b;
+    }
+  
+    .energy-section {
+      margin-bottom: 28px;
+    }
+  
+    .energy-section span {
+      display: block;
+      text-align: center;
+      font-size: 14px;
+      color: #555;
+      margin-bottom: 15px;
+    }
+  
+    .energy-dots {
+      display: flex;
+      justify-content: space-between;
+      padding: 0 12px;
+    }
+  
+    .dot {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #ddd;
+    }
+  
+    .dot:nth-child(1) { background: #cfcfcf; }
+    .dot:nth-child(2) { background: #bfbfbf; }
+    .dot:nth-child(3) { background: #ffb3b3; }
+    .dot:nth-child(4) { background: #ff6b6b; }
+  
+    .add-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #ff7a7a, #ff5a5a);
+      color: white;
+      border: none;
+      border-radius: 999px;
+      padding: 16px 0;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(255, 107, 107, 0.45);
+    }
+    /* Upload box hover */
+  .upload-box {
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+  }
+
+  .upload-box:hover {
+    background: #ffffff;
+    border-color: #ff6b6b;
+    transform: translateY(-1px);
+  }
+
+  /* Energy dots hover */
+  .dot {
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .dot:hover {
+    transform: scale(1.2);
+    box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.15);
+  }
+
+  /* Add Task button hover + active */
+  .add-btn {
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .add-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 26px rgba(255, 107, 107, 0.55);
+  }
+
+  .add-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 6px 14px rgba(255, 107, 107, 0.4);
+  }
+  </style>
+</head>
+<body>
+  <div class="add-task-card">
+    <h2 class="task-title">New Task</h2>
+
+    <label class="upload-box">
+      Upload File
+    </label>
+
+    <textarea placeholder="or type here..."></textarea>
+
+    <div class="energy-section">
+      <span>Pick your energy level</span>
+      <div class="energy-dots">
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+    </div>
+
+    <button class="add-btn">Add Task</button>
+  </div>
+</body>
+</html>
