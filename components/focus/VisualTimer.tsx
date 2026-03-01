@@ -55,7 +55,8 @@ export function VisualTimer({ minutes, onComplete }: VisualTimerProps) {
         <div>
           <h3 className="text-sm font-medium text-muted-foreground mb-1">Focus Block</h3>
           <p className="text-2xl font-bold">
-            {progressPercentage}% Completed
+            {String(Math.floor(secondsLeft / 60)).padStart(2, '0')}:
+            {String(secondsLeft % 60).padStart(2, '0')}
           </p>
         </div>
         <div className="flex gap-2">
