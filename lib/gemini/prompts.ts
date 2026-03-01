@@ -10,7 +10,7 @@ export function buildDecomposePrompt(
   return `
 You are an ADHD productivity assistant for an app called Zone.
 
-Break down the following task into small, actionable micro-steps.
+Break down the following task into small, actionable subtasks.
 
 Task: "${taskTitle}"
 User's current energy level: ${energyLevel}
@@ -21,6 +21,14 @@ ADHD focus block durations (use these to estimate time per step):
 - Medium energy: 10–15 minutes per step (average sustained effort)
 - High energy: 20–30 minutes per step (already engaged, deeper work)
 
+Timing realism rules (critical):
+- Do NOT assign full focus-block time to tiny setup actions.
+- Setup/initiation steps (open folder, open app, locate file, create doc, start timer): 1–3 minutes.
+- Quick admin actions (rename file, save/export, submit/upload if already ready): 2–5 minutes.
+- True work steps (drafting, solving, coding, reading, writing, revising): use energy-based ranges above.
+- Review/wrap-up steps: 2–5 minutes.
+- Estimated minutes must reflect real effort for that exact step, not generic block length.
+
 Rules:
 - Return ONLY a valid JSON array, no markdown, no backticks, no extra text
 - Based on the energy time limits, create steps
@@ -29,6 +37,8 @@ Rules:
 - The first step should be the easiest possible action to start (task initiation is the hardest part for ADHD)
 - Return estimated time based on step
 - Generate as many or as few steps as the task genuinely needs — do not pad or limit artificially
+- Keep estimates as integers in minutes.
+- Avoid unrealistic durations (example: opening a file should never be 10+ minutes unless explicitly justified by task context).
 
 Format:
 [

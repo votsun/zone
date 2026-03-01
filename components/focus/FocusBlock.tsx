@@ -50,7 +50,7 @@ export function FocusBlock({
             expanded
             autoStart
             onComplete={() => {
-              if (!isCompleting) {
+              if (!isCompleting && !isSkipping) {
                 onCompleteStep(currentStep.id)
               }
             }}

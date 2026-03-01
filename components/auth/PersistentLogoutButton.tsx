@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { buttonVariants } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 const HIDDEN_PATHS = ['/login', '/callback']
 
@@ -33,7 +35,10 @@ export function PersistentLogoutButton() {
       type="button"
       onClick={() => void handleLogout()}
       disabled={isLoggingOut}
-      className="fixed right-4 top-4 z-20 rounded-full border border-white/30 bg-white/85 px-3 py-1 text-sm font-semibold text-slate-800 shadow-sm backdrop-blur hover:bg-white disabled:opacity-60"
+      className={cn(
+        buttonVariants({ variant: 'outline', size: 'sm' }),
+        'fixed right-4 top-4 z-20 rounded-full border-white/30 bg-white/85 font-semibold text-slate-800 shadow-sm backdrop-blur dark:bg-white/85 dark:hover:bg-white/95'
+      )}
       aria-label="Logout"
     >
       {isLoggingOut ? 'Logging out...' : 'Logout'}
