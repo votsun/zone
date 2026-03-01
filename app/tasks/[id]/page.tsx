@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Task } from '@/types/task'
@@ -16,32 +16,91 @@ export default function TaskDetailPage() {
   const params = useParams()
   const router = useRouter()
   const supabase = createClient()
+  const taskIdParam = params.id
+  const taskId = Array.isArray(taskIdParam) ? taskIdParam[0] : taskIdParam
 
   const [task, setTask] = useState<Task | null>(null)
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [generateError, setGenerateError] = useState<string | null>(null)
   const [viewState, setViewState] = useState<ViewState>('breakdown')
   const [rewardType, setRewardType] = useState<'step' | 'task'>('step')
 
-  useEffect(() => {
-    fetchTask()
-  }, [params.id])
+  const fetchTask = useCallback(async () => {
+    if (!taskId) {
+      setLoadError('Missing task id in URL')
+      setTask(null)
+      setLoading(false)
+      return
+    }
+    setLoading(true)
+    setLoadError(null)
 
-  const fetchTask = async () => {
-    const { data, error } = await supabase
-      .from('tasks')
-      .select('*, micro_steps(*)')
-      .eq('id', params.id)
-      .order('order_index', { referencedTable: 'micro_steps', ascending: true })
-      .single()
+    const response = await fetch(`/api/tasks/${taskId}`)
+    if (!response.ok) {
+      try {
+        const body = (await response.json()) as { error?: string }
+        setLoadError(body.error || `Request failed (${response.status})`)
+      } catch {
+        setLoadError(`Request failed (${response.status})`)
+      }
+      setTask(null)
+      setLoading(false)
+      return
+    }
 
-    if (error) console.error(error)
-    else setTask(data)
+    const data = (await response.json()) as Task
+    setTask(data)
     setLoading(false)
-  }
+  }, [taskId])
+
+  const generateMicroSteps = useCallback(async () => {
+    if (!taskId || !task) return
+    setGenerateError(null)
+    setIsGenerating(true)
+
+    try {
+      const response = await fetch('/api/tasks/decompose', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          taskId,
+          taskTitle: task.title,
+          energyLevel: task.energy_level || 'medium',
+        }),
+      })
+
+      if (!response.ok) {
+        const body = (await response.json().catch(() => ({}))) as { error?: string }
+        throw new Error(body.error || `Failed to generate steps (${response.status})`)
+      }
+
+      await fetchTask()
+    } catch (err) {
+      setGenerateError(
+        err instanceof Error ? err.message : 'Failed to generate micro-steps.'
+      )
+    } finally {
+      setIsGenerating(false)
+    }
+  }, [taskId, task, fetchTask])
+
+  useEffect(() => {
+    void fetchTask()
+  }, [fetchTask])
+
+  useEffect(() => {
+    if (!task || isGenerating || generateError) return
+    const hasSteps = (task.micro_steps?.length || 0) > 0
+    if (!hasSteps) {
+      void generateMicroSteps()
+    }
+  }, [task, isGenerating, generateError, generateMicroSteps])
 
   const handleCompleteStep = async (stepId: string) => {
     await supabase
-      .from('micro_steps')
+      .from('subtasks')
       .update({ is_complete: true })
       .eq('id', stepId)
 
@@ -83,7 +142,7 @@ export default function TaskDetailPage() {
   if (!task) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen gap-4">
-        <p className="text-muted-foreground">Task not found.</p>
+        <p className="text-muted-foreground">{loadError || 'Task not found.'}</p>
         <Button onClick={() => router.push('/dashboard')}>Back to Dashboard</Button>
       </div>
     )
@@ -120,9 +179,6 @@ export default function TaskDetailPage() {
 
           <div className="space-y-1 px-1">
             <h1 className="text-2xl font-bold">{task.title}</h1>
-            {task.description && (
-              <p className="text-muted-foreground text-sm">{task.description}</p>
-            )}
           </div>
 
           <TaskBreakdown
@@ -130,6 +186,26 @@ export default function TaskDetailPage() {
             onCompleteStep={handleCompleteStep}
             onCompleteTask={handleCompleteTask}
           />
+
+          {(!task.micro_steps || task.micro_steps.length === 0) && (
+            <div className="space-y-3">
+              {isGenerating && (
+                <p className="text-sm text-muted-foreground">Generating micro-steps...</p>
+              )}
+              {generateError && (
+                <p className="text-sm text-red-500">{generateError}</p>
+              )}
+              {!isGenerating && (
+                <Button
+                  size="lg"
+                  className="w-full"
+                  onClick={() => void generateMicroSteps()}
+                >
+                  Generate Micro-Steps
+                </Button>
+              )}
+            </div>
+          )}
 
           {/* Start Focus Mode Button — only shows if there's an incomplete step */}
           {currentStep && (

@@ -1,164 +1,255 @@
-"use client";
+'use client'
 
-import { useEffect, useRef, useState } from "react";
-import { ChevronRight, Check, Plus } from "lucide-react";
-import styles from "./home.module.css";
-import { initialTasks, type Tasks } from "./data";
-import { createClient } from "@/lib/supabase/client";
-import Link from "next/link";
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { ChevronRight, Check, Plus } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import styles from './home.module.css'
+import { createClient } from '@/lib/supabase/client'
+import { useTasks } from '@/hooks/useTasks'
+import { Task } from '@/types/task'
+
+type Star = {
+  left: string
+  top: string
+  animationDelay: string
+  opacity: number
+}
 
 export default function Page() {
-  const [selectedTask, setSelectedTask] = useState<Tasks | null>(null)
-  const [name, setName] = useState("there"); // fallback while loading
+  const router = useRouter()
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null)
+  const [creatingTask, setCreatingTask] = useState(false)
+  const [actionError, setActionError] = useState<string | null>(null)
+  const [name, setName] = useState('there')
+  const [slide, setSlide] = useState(0)
+
+  const sliderRef = useRef<HTMLDivElement>(null)
+
+  const stars = useRef<Star[]>(
+    Array.from({ length: 60 }).map(() => ({
+      left: `${Math.random() * 100}%`,
+      top: `${Math.random() * 100}%`,
+      animationDelay: `${Math.random() * 4}s`,
+      opacity: Math.random() * 0.6 + 0.2,
+    }))
+  ).current
+
+  const { tasks, isLoading, error, createTask, updateTask } = useTasks()
+
   useEffect(() => {
-    const supabase = createClient();
+    const supabase = createClient()
 
     async function getUser() {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
 
-      if (user) {
-        const emailName = user.email?.split("@")[0];
-        setName(emailName ?? "there");
+      if (!user) return
 
-        // Option B — fetch full name from your profiles table
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("full_name")
-          .eq("id", user.id)
-          .single();
+      const emailName = user.email?.split('@')[0]
+      setName(emailName ?? 'there')
 
-        if (profile?.full_name) setName(profile.full_name);
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('id', user.id)
+        .single()
+
+      if (profile?.full_name) {
+        setName(profile.full_name)
       }
     }
 
-    getUser();
-  }, []);
+    getUser()
+  }, [])
 
+  const selectedTask = useMemo(
+    () => tasks.find((task) => task.id === selectedTaskId) ?? null,
+    [tasks, selectedTaskId]
+  )
 
-  const [tasks, setTasks] = useState<Tasks[]>(initialTasks);
-  const [slide, setSlide] = useState(0); // 0 = active tasks, 1 = completed tasks
-  const sliderRef = useRef<HTMLDivElement>(null);
+  const activeTasks = useMemo(
+    () => tasks.filter((task) => !task.is_complete),
+    [tasks]
+  )
 
-  // Split tasks into two groups
-  const activeTasks = tasks.filter((t) => !t.completed);
-  const completedTasks = tasks.filter((t) => t.completed);
+  const completedTasks = useMemo(
+    () => tasks.filter((task) => task.is_complete),
+    [tasks]
+  )
 
-  // Mark a task as complete (moves it to slide 2)
-  const completeTask = (id: number) => {
-    setTasks((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, completed: true } : t))
-    );
-  };
+  const getRemainingSteps = (task: Task) =>
+    task.micro_steps?.filter((step) => !step.is_complete).length ?? 0
 
-  // Go to a specific slide
+  const getTotalMinutes = (task: Task) =>
+    task.micro_steps?.reduce(
+      (total, step) => total + (step.estimated_minutes ?? 0),
+      0
+    ) ?? 0
+
   const goToSlide = (index: number) => {
-    setSlide(index);
-    sliderRef.current?.children[index].scrollIntoView({
-      behavior: "smooth",
-      block: "nearest",
-      inline: "start",
-    });
-  };
+    setSlide(index)
+    sliderRef.current?.children[index]?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'nearest',
+      inline: 'start',
+    })
+  }
+
+  const completeTask = async (id: string) => {
+    try {
+      setActionError(null)
+      await updateTask(id, { is_complete: true })
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : 'Failed to complete task'
+      setActionError(message)
+    }
+  }
+
+  const handleCreateTask = async () => {
+    if (creatingTask) return
+
+    const title = window.prompt('What task should we add?')
+    if (!title || !title.trim()) return
+
+    setActionError(null)
+    setCreatingTask(true)
+
+    try {
+      const created = await createTask({
+        title: title.trim(),
+        category: 'neutral',
+        priority: 'medium',
+        energy_level: 'medium',
+      })
+
+      router.push(`/tasks/${created.id}`)
+      setSlide(0)
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : 'Failed to create task'
+      setActionError(message)
+      window.alert(`Could not add task: ${message}`)
+    } finally {
+      setCreatingTask(false)
+    }
+  }
 
   return (
     <div className={styles.page}>
-      {/* Stars in the background */}
       <div className={styles.starfield} aria-hidden>
-        {Array.from({ length: 60 }).map((_, i) => (
+        {stars.map((star, i) => (
           <div
             key={i}
             className={styles.star}
             style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 4}s`,
-              opacity: Math.random() * 0.6 + 0.2,
+              left: star.left,
+              top: star.top,
+              animationDelay: star.animationDelay,
+              opacity: star.opacity,
             }}
           />
         ))}
       </div>
 
       <div className={styles.content}>
-
-        {/* Greeting */}
         <div className={styles.greeting}>
           <h1>Hi, {name} 👋</h1>
-          <p>Today's Focus</p>
+          <p>Today&apos;s Focus</p>
         </div>
 
-        {/* Slide indicators — two dots showing which slide you're on */}
         <div className={styles.dots}>
           <button
-            className={`${styles.dot} ${slide === 0 ? styles.dotActive : ""}`}
+            className={`${styles.dot} ${slide === 0 ? styles.dotActive : ''}`}
             onClick={() => goToSlide(0)}
+            aria-label="Show active tasks"
           />
           <button
-            className={`${styles.dot} ${slide === 1 ? styles.dotActive : ""}`}
+            className={`${styles.dot} ${slide === 1 ? styles.dotActive : ''}`}
             onClick={() => goToSlide(1)}
+            aria-label="Show completed tasks"
           />
         </div>
 
-        {/* Slideshow — two slides side by side, CSS scroll snap handles the swiping */}
         <div
           className={styles.slider}
           ref={sliderRef}
           onScroll={(e) => {
-            // Update the active dot when the user manually swipes
-            const el = e.currentTarget;
-            const newSlide = Math.round(el.scrollLeft / el.offsetWidth);
-            setSlide(newSlide);
+            const el = e.currentTarget
+            const newSlide = Math.round(el.scrollLeft / el.offsetWidth)
+            setSlide(newSlide)
           }}
         >
-
-          {/* Slide 1 — Active tasks */}
           <div className={styles.slide}>
             <div className={styles.slideHeader}>
               <span className={styles.slideTitle}>Active</span>
               <span className={styles.slideCount}>{activeTasks.length} tasks</span>
             </div>
+
             <div className={styles.taskList}>
-              {activeTasks.length === 0 && (
+              {isLoading && (
+                <div className={styles.emptyState}>Loading tasks...</div>
+              )}
+
+              {!isLoading && !error && activeTasks.length === 0 && (
                 <div className={styles.emptyState}>All done! 🎉</div>
               )}
-              {activeTasks.map((task) => (
-                <div
-                  key={task.id}
-                  className={`${styles.taskCard} ${styles.taskCardFeatured}`}
-                  onClick={() => setSelectedTask(task)}
-                >
-                  <div className={styles.taskCardLeft}>
-                    <span className={styles.taskTitle}>{task.title}</span>
-                    <span className={styles.taskMeta}>
-                      {task.subtasks.length > 0
-                        ? `${task.subtasks.filter((s) => !s.done).length} subtasks left`
-                        : task.totalMinutes
-                        ? `${task.totalMinutes} min total`
-                        : "Tap to complete"}
-                    </span>
-                  </div>
-                  <div className={styles.taskCardRight}>
-                    {task.subtasks.length > 0 && (
-                      <span className={styles.taskDuration}>
-                        {task.subtasks.reduce((total, s) => total + s.duration, 0)} min
+
+              {error && <div className={styles.emptyState}>{error}</div>}
+              {actionError && (
+                <div className={styles.emptyState}>{actionError}</div>
+              )}
+
+              {activeTasks.map((task) => {
+                const totalMinutes = getTotalMinutes(task)
+                const remainingSteps = getRemainingSteps(task)
+                const hasSteps = (task.micro_steps?.length ?? 0) > 0
+
+                return (
+                  <div
+                    key={task.id}
+                    className={`${styles.taskCard} ${styles.taskCardFeatured}`}
+                    onClick={() => setSelectedTaskId(task.id)}
+                  >
+                    <div className={styles.taskCardLeft}>
+                      <span className={styles.taskTitle}>{task.title}</span>
+                      <span className={styles.taskMeta}>
+                        {hasSteps
+                          ? `${remainingSteps} subtasks left`
+                          : totalMinutes > 0
+                          ? `${totalMinutes} min total`
+                          : 'Tap to open'}
                       </span>
-                    )}
-                    <ChevronRight size={14} />
+                    </div>
+
+                    <div className={styles.taskCardRight}>
+                      {totalMinutes > 0 && (
+                        <span className={styles.taskDuration}>
+                          {totalMinutes} min
+                        </span>
+                      )}
+                      <ChevronRight size={14} />
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
 
-          {/* Slide 2 — Completed tasks */}
           <div className={styles.slide}>
             <div className={styles.slideHeader}>
               <span className={styles.slideTitle}>Completed</span>
-              <span className={styles.slideCount}>{completedTasks.length} tasks</span>
+              <span className={styles.slideCount}>
+                {completedTasks.length} tasks
+              </span>
             </div>
+
             <div className={styles.taskList}>
               {completedTasks.length === 0 && (
                 <div className={styles.emptyState}>Nothing completed yet</div>
               )}
+
               {completedTasks.map((task) => (
                 <div
                   key={task.id}
@@ -175,84 +266,91 @@ export default function Page() {
               ))}
             </div>
           </div>
-
         </div>
 
-        {/* Add new task button */}
-        <Link href="/add_task">
-          <button className={styles.fab}>
-            <Plus size={22} />
-          </button>
-        </Link>
-
-      </div>
-      {/* ── Task Detail Overlay (blurred background) ─────────── */}
-{selectedTask && (
-  <>
-    {/* Backdrop — blurs the background */}
-    <div
-      className={styles.backdrop}
-      onClick={() => setSelectedTask(null)}
-    />
-
-    {/* Detail Panel */}
-    <div className={styles.detailPanel}>
-      <div className={styles.detailHeader}>
-        <h2 className={styles.detailTitle}>{selectedTask.title}</h2>
         <button
-          className={styles.closeBtn}
-          onClick={() => setSelectedTask(null)}
-        >✕</button>
-      </div>
-
-      {/* Subtask list */}
-      <div className={styles.subtaskList}>
-        {selectedTask.subtasks.length === 0 ? (
-          <p className={styles.emptyState}>No subtasks yet.</p>
-        ) : (
-          selectedTask.subtasks.map((sub) => (
-            <div key={sub.id} className={`${styles.subtaskRow} ${sub.done ? styles.subtaskDone : ''}`}>
-              <div className={styles.subtaskLeft}>
-                <span className={styles.subtaskTitle}>{sub.title}</span>
-                <span className={styles.subtaskMeta}>{sub.duration} min</span>
-              </div>
-              {/* Timer block visual */}
-              <div className={styles.timerBlock}>
-                <div
-                  className={styles.timerFill}
-                  style={{ width: sub.done ? '100%' : '0%' }}
-                />
-              </div>
-            </div>
-          ))
-        )}
-      </div>
-
-      {/* Total time */}
-      {selectedTask.subtasks.length > 0 && (
-        <p className={styles.totalTime}>
-          ⏱ {selectedTask.subtasks.reduce((t, s) => t + s.duration, 0)} min total
-        </p>
-      )}
-
-      {/* Action buttons */}
-      <div className={styles.detailActions}>
-        <button
-          className={styles.startBtn}
-          onClick={() => {
-            // TODO: start focus mode
-            console.log('Start focus for', selectedTask.title)
-          }}
+          className={styles.fab}
+          onClick={handleCreateTask}
+          disabled={creatingTask}
+          aria-label="Add task"
         >
-          ▶ Start
+          <Plus size={22} />
         </button>
-        <button
-          className={styles.completeBtn}
-          onClick={() => {
-            completeTask(selectedTask.id)
-            setSelectedTask(null)
-          }}
-        >
+      </div>
+
+      {selectedTask && (
+        <>
+          <div
+            className={styles.backdrop}
+            onClick={() => setSelectedTaskId(null)}
+          />
+
+          <div className={styles.detailPanel}>
+            <div className={styles.detailHeader}>
+              <h2 className={styles.detailTitle}>{selectedTask.title}</h2>
+              <button
+                className={styles.closeBtn}
+                onClick={() => setSelectedTaskId(null)}
+                aria-label="Close task details"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className={styles.subtaskList}>
+              {!selectedTask.micro_steps || selectedTask.micro_steps.length === 0 ? (
+                <p className={styles.emptyState}>No subtasks yet.</p>
+              ) : (
+                selectedTask.micro_steps.map((sub) => (
+                  <div
+                    key={sub.id}
+                    className={`${styles.subtaskRow} ${
+                      sub.is_complete ? styles.subtaskDone : ''
+                    }`}
+                  >
+                    <div className={styles.subtaskLeft}>
+                      <span className={styles.subtaskTitle}>
+                        {sub.description}
+                      </span>
+                      <span className={styles.subtaskMeta}>
+                        {sub.estimated_minutes ?? 0} min
+                      </span>
+                    </div>
+
+                    <div className={styles.timerBlock}>
+                      <div
+                        className={styles.timerFill}
+                        style={{ width: sub.is_complete ? '100%' : '0%' }}
+                      />
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {!!selectedTask.micro_steps?.length && (
+              <p className={styles.totalTime}>
+                ⏱ {getTotalMinutes(selectedTask)} min total
+              </p>
+            )}
+
+            <div className={styles.detailActions}>
+              <button
+                className={styles.startBtn}
+                onClick={() => {
+                  router.push(`/tasks/${selectedTask.id}`)
+                }}
+              >
+                ▶ Start
+              </button>
+
+              <button
+                className={styles.completeBtn}
+                onClick={async () => {
+                  await completeTask(selectedTask.id)
+                  setSelectedTaskId(null)
+                }}
+              >
                 ✓ Mark Complete
               </button>
             </div>
@@ -260,5 +358,5 @@ export default function Page() {
         </>
       )}
     </div>
-  );
+  )
 }
