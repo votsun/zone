@@ -24,6 +24,8 @@ export default function TaskDetailPage() {
   const [generateError, setGenerateError] = useState<string | null>(null)
   const [viewState, setViewState] = useState<ViewState>('breakdown')
   const [rewardType, setRewardType] = useState<'step' | 'task'>('step')
+  const [isCompletingStep, setIsCompletingStep] = useState(false)
+  const [isCompletingTask, setIsCompletingTask] = useState(false)
 
   const fetchTask = useCallback(async () => {
     if (!taskId) {
@@ -96,44 +98,74 @@ export default function TaskDetailPage() {
   }, [task, isGenerating, generateError, generateMicroSteps])
 
   const handleCompleteStep = async (stepId: string) => {
+    if (!task || isCompletingStep || isCompletingTask) return
+
+    const previousTask = task
+    const alreadyComplete = task.micro_steps?.find((step) => step.id === stepId)?.is_complete
+    if (alreadyComplete) return
+
+    setGenerateError(null)
+    setIsCompletingStep(true)
+    setTask((current) => {
+      if (!current?.micro_steps) return current
+      return {
+        ...current,
+        micro_steps: current.micro_steps.map((step) =>
+          step.id === stepId ? { ...step, is_complete: true } : step
+        ),
+      }
+    })
+    setRewardType('step')
+    setViewState('reward')
+
     const response = await fetch(`/api/subtasks/${stepId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ is_complete: true }),
     })
     if (!response.ok) {
+      setTask(previousTask)
       setGenerateError('Failed to mark step complete.')
+      setViewState('breakdown')
+      setIsCompletingStep(false)
       return
     }
 
-    setRewardType('step')
-    setViewState('reward')
-
-    // After reward show, refresh task and go back to breakdown
-    setTimeout(async () => {
-      await fetchTask()
+    // After reward show, go back to breakdown
+    setTimeout(() => {
       setViewState('breakdown')
     }, 2000)
+    setIsCompletingStep(false)
   }
 
   const handleCompleteTask = async (completedTaskId: string) => {
+    if (!task || isCompletingTask || isCompletingStep) return
+
+    const previousTask = task
+    setGenerateError(null)
+    setIsCompletingTask(true)
+    setTask((current) => (current ? { ...current, is_complete: true } : current))
+    setRewardType('task')
+    setViewState('reward')
+
     const response = await fetch(`/api/tasks/${completedTaskId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ is_complete: true }),
     })
     if (!response.ok) {
+      setTask(previousTask)
       setGenerateError('Failed to mark task complete.')
+      setViewState('breakdown')
+      setIsCompletingTask(false)
       return
     }
-
-    setRewardType('task')
-    setViewState('reward')
 
     // After big celebration, go back to dashboard
     setTimeout(() => {
       router.push('/dashboard')
     }, 4000)
+    setIsCompletingTask(false)
   }
 
   // Loading state
@@ -192,6 +224,7 @@ export default function TaskDetailPage() {
             task={task}
             onCompleteStep={handleCompleteStep}
             onCompleteTask={handleCompleteTask}
+            isCompleting={isCompletingStep || isCompletingTask}
           />
 
           {(!task.micro_steps || task.micro_steps.length === 0) && (
@@ -236,6 +269,7 @@ export default function TaskDetailPage() {
           totalSteps={totalSteps}
           onCompleteStep={handleCompleteStep}
           onExitFocus={() => setViewState('breakdown')}
+          isCompleting={isCompletingStep || isCompletingTask}
         />
       )}
     </div>
